@@ -14,6 +14,7 @@ public struct PlayerControllerData
 }
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] private float WalkSpeed = 100f;
     public PlayerControllerData Data;
     public uint ID;
     public void Init(uint inID)
@@ -23,6 +24,6 @@ public class PlayerController : MonoBehaviour
 
     public void Tick(Gamepad gamepad)
     {
-        transform.position += Vector3.right * gamepad.leftStick.value.x;
+        transform.position += Vector3.right * (gamepad.leftStick.value.x * WalkSpeed * Time.deltaTime);
     }
 }

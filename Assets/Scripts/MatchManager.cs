@@ -23,7 +23,7 @@ public class MatchManager : MonoBehaviour
     [SerializeField] public GameObject[] spawnPoints;
     [SerializeField] public PlayerController playerControllerPrefab;
 
-    private Dictionary<uint, PlayerMatchData> players = new Dictionary<uint, PlayerMatchData>();
+    private Dictionary<uint, PlayerMatchData> players;
     public void Init(MatchParams inParams)
     {
         if (inParams.Players.Length > spawnPoints.Length)
@@ -33,7 +33,8 @@ public class MatchManager : MonoBehaviour
         }
 
         uint[] PlayerSpawnOrder = PermuteNumbers(inParams.Players.Length);
-        
+
+        players = new Dictionary<uint, PlayerMatchData>();
         for (uint i = 0; i < inParams.Players.Length; i++)
         {
             var player = Instantiate(playerControllerPrefab, spawnPoints[PlayerSpawnOrder[i]].transform.position, Quaternion.identity);
@@ -47,7 +48,7 @@ public class MatchManager : MonoBehaviour
     }
 
 
-    public void Update()
+    public void Tick()
     {
         foreach(var player in players)
         {
@@ -59,13 +60,12 @@ public class MatchManager : MonoBehaviour
     {
         uint[] output = new uint[count];
         HashSet<int> UsedInts = new HashSet<int>();
-        Random random = new Random();
         for (int i = 0; i < count; i++)
         {
-            int v = random.NextInt(count);
+            int v = UnityEngine.Random.Range(0,count);
             while (UsedInts.Contains(v))
             {
-                v = random.NextInt(count);
+                v = UnityEngine.Random.Range(0,count);
             }
 
             output[i] = (uint)v;
