@@ -6,23 +6,23 @@ using UnityEngine.InputSystem;
 
 public struct PlayerControllerData
 {
-    public Gamepad gamepad;
-
-    public PlayerControllerData(Gamepad gamepad)
+    public uint ID;
+    public PlayerControllerData(uint id)
     {
-        this.gamepad = gamepad;
+        ID = id;
     }
 }
 public class PlayerController : MonoBehaviour
 {
-    public PlayerControllerData data;
-    public void Init(PlayerControllerData inData)
+    public PlayerControllerData Data;
+    public uint ID;
+    public void Init(uint inID)
     {
-        this.data = inData;
+        ID = inID;
     }
 
-    public void Update()
+    public void Tick(Gamepad gamepad)
     {
-        transform.position += Vector3.right * data.gamepad.leftStick.value.x;
+        transform.position += Vector3.right * gamepad.leftStick.value.x;
     }
 }
