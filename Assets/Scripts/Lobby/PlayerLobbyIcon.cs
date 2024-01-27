@@ -12,6 +12,7 @@ public class PlayerLobbyIcon : MonoBehaviour
     [SerializeField] private UnityEvent leaveEvent;
     [SerializeField] private UnityEvent readyEvent;
     [SerializeField] private UnityEvent unreadyEvent;
+    [SerializeField] private UnityEvent clearEvent;
     
     
     public int ID;
@@ -24,6 +25,7 @@ public class PlayerLobbyIcon : MonoBehaviour
         unreadyEvent.Invoke();
         leaveEvent.Invoke();
         bActive = false;
+        bReady = false;
     }
 
     public void Tick()
@@ -36,16 +38,11 @@ public class PlayerLobbyIcon : MonoBehaviour
         var gamepads = Gamepad.all;
         if (gamepads.Count <= ID)
             return;
-        if (gamepads[ID].buttonSouth.IsPressed())
+        if (gamepads[ID].buttonSouth.wasReleasedThisFrame)
         {
             if (bActive)
             {
-                if (bReady)
-                {
-                    unreadyEvent.Invoke();
-                    bReady = false;
-                }
-                else
+                if(!bReady)
                 {
                     readyEvent.Invoke();
                     bReady = true;
@@ -58,18 +55,29 @@ public class PlayerLobbyIcon : MonoBehaviour
             }
         }
 
-        if (gamepads[ID].buttonEast.IsPressed())
+        if (gamepads[ID].buttonEast.wasReleasedThisFrame)
         {
             if (bActive)
             {
-                bActive = false;
-                leaveEvent.Invoke();
+                if (bReady)
+                {
+                    bReady = false;
+                    unreadyEvent.Invoke();
+                }
+                else
+                {
+                    bActive = false;
+                    leaveEvent.Invoke();
+                }
             }
         }
     }
 
     public void Clear()
     {
+        bReady = false;
+        bActive = false;
         ID = -1;
+        clearEvent.Invoke();
     }
 }

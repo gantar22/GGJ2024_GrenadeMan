@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[Serializable]
 public struct PlayerLobbyData
 {
     public int ID;
@@ -23,31 +24,20 @@ public class LobbyManager : MonoBehaviour
 {
     [SerializeField] private PlayerLobbyIcon[] Icons = null;
     private Action<LobbyOutput> onFinish = null;
-    public void PerformLobby(Action<LobbyOutput> inOnFinish)
+    public void PerformLobby(PlayerLobbyData[] inPlayers, Action<LobbyOutput> inOnFinish)
     {
+        for (int i = 0; i < Icons.Length; i++)
+        {
+            Icons[i].Init(i);
+            if (inPlayers.Any(_ => _.ID == i))
+            {
+                Icons[i].bActive = true;
+            }
+        }
         onFinish = inOnFinish;
     }
 
-    public void Update()
-    {
-        foreach (var icon in Icons)
-        {
-            icon.Tick();
-        }
-
-        bool bAllReady = true;
-        foreach (var icon in Icons)
-        {
-            bAllReady &= icon.bReady;
-        }
-
-        if (bAllReady)
-        {//todo count down
-            Finish();
-        }
-    }
-
-    private void Reset()
+    private void Clear()
     {
         foreach (var icon in Icons)
         {
@@ -64,7 +54,20 @@ public class LobbyManager : MonoBehaviour
         output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData(_.ID)).ToArray();
         
         var callback = onFinish;
-        Reset();
+        Clear();
         callback(output);
+    }
+
+    public void Tick()
+    {
+        foreach (var icon in Icons)
+        {
+            icon.Tick();
+        }
+
+        if (Icons.All(_=>_.bReady || !_.bActive) && Icons.Count(_=>_.bActive) > 1)
+        {//todo count down
+            Finish();
+        }
     }
 }
