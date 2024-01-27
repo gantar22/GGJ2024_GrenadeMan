@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+[Serializable]
 public struct PlayerLobbyData
 {
     public int ID;
@@ -23,11 +24,15 @@ public class LobbyManager : MonoBehaviour
 {
     [SerializeField] private PlayerLobbyIcon[] Icons = null;
     private Action<LobbyOutput> onFinish = null;
-    public void PerformLobby(Action<LobbyOutput> inOnFinish)
+    public void PerformLobby(PlayerLobbyData[] inPlayers, Action<LobbyOutput> inOnFinish)
     {
         for (int i = 0; i < Icons.Length; i++)
         {
             Icons[i].Init(i);
+            if (inPlayers.Any(_ => _.ID == i))
+            {
+                Icons[i].bActive = true;
+            }
         }
         onFinish = inOnFinish;
     }

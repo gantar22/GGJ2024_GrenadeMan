@@ -25,6 +25,7 @@ public class PlayerLobbyIcon : MonoBehaviour
         unreadyEvent.Invoke();
         leaveEvent.Invoke();
         bActive = false;
+        bReady = false;
     }
 
     public void Tick()

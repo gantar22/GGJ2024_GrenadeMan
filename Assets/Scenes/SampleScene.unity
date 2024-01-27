@@ -534,7 +534,12 @@ MonoBehaviour:
   LevelPrefabs:
   - {fileID: 9138423148057079130, guid: 5f4a0b6c160cd6849970d23df5bc0c8c, type: 3}
   LobbyManager: {fileID: 2087161321}
-  gameState: 0
+  gameState:
+    flag: 2
+    LevelIndex: -1
+    PlayerInfo:
+    - ID: 0
+    - ID: 1
 --- !u!4 &2132169736
 Transform:
   m_ObjectHideFlags: 0

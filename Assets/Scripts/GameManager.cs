@@ -14,17 +14,22 @@ public class GameManager : MonoBehaviour
         Match,
     }
 
+    [Serializable]
     public struct GameState
     {
+        [SerializeField]
         public GameStateFlag flag;
-        public int? LevelIndex;
+        [SerializeField]
+        public int LevelIndex;//-1 for random/uninit
+        [SerializeField]
+        public PlayerLobbyData[] PlayerInfo;
 
         public static GameState Lobby()
         {
             return new GameState()
             {
                 flag = GameStateFlag.Lobby,
-                LevelIndex = null,
+                LevelIndex = -1,
             };
         }
     }
@@ -39,14 +44,32 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        SpawnLevels();
+        LobbyManager.gameObject.SetActive(false);
+        switch (gameState.flag)
+        {
+            case GameStateFlag.Uninit:
+                break;
+            case GameStateFlag.Lobby:
+                GoToLobby(gameState.PlayerInfo);
+                break;
+            case GameStateFlag.Match:
+                GoToLevel(gameState.PlayerInfo,gameState.LevelIndex != -1 ? gameState.LevelIndex : null);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void SpawnLevels()
+    {
         Levels = LevelPrefabs.Select(_ => Instantiate(_)).ToArray();
         foreach (var matchManager in Levels)
         {
             matchManager.gameObject.SetActive(false);
         }
-        GoToLobby();
     }
-
+    
     private void Update()
     {
         switch (gameState.flag)
@@ -57,19 +80,19 @@ public class GameManager : MonoBehaviour
                 LobbyManager.Tick();
                 break;
             case GameStateFlag.Match:
-                Levels[gameState.LevelIndex.Value].Tick();
+                Levels[gameState.LevelIndex].Tick();
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
 
-    void GoToLobby()
+    void GoToLobby(PlayerLobbyData[] inPlayers)
     {
         gameState.flag = GameStateFlag.Lobby;
-        gameState.LevelIndex = null;
+        gameState.LevelIndex = -1;
         //TODO the callback here is probably not the greatest, we could just poll and not have to invert control flow like this
-        LobbyManager.PerformLobby(output =>
+        LobbyManager.PerformLobby(inPlayers,output =>
         {
             GoToLevel(output.PlayerData);
         });
@@ -81,7 +104,7 @@ public class GameManager : MonoBehaviour
         
         gameState.flag = GameStateFlag.Match;
         gameState.LevelIndex = levelIndex;
-        var nextLevel = Levels[gameState.LevelIndex.Value];
+        var nextLevel = Levels[gameState.LevelIndex];
         nextLevel.gameObject.SetActive(true);
         MatchParams matchParams = new MatchParams
         {
