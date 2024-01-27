@@ -8,43 +8,56 @@ using Random = Unity.Mathematics.Random;
 
 public struct MatchParams
 {
-    public int playerCount;
+    public PlayerLobbyData[] Players;
+}
+
+public struct PlayerMatchData
+{
+    public PlayerController Controller;
+    public Gamepad Gamepad;
+    public PlayerLobbyData LobbyData;
 }
 
 public class MatchManager : MonoBehaviour
 {
-    [SerializeField] public GameObject[] SpawnPoints;
-    [SerializeField] public PlayerController PlayerControllerPrefab;
+    [SerializeField] public GameObject[] spawnPoints;
+    [SerializeField] public PlayerController playerControllerPrefab;
 
-    private List<PlayerController> Players = new List<PlayerController>();
-    public void Init(MatchParams Params)
+    private Dictionary<uint, PlayerMatchData> players = new Dictionary<uint, PlayerMatchData>();
+    public void Init(MatchParams inParams)
     {
-        if (Params.playerCount > SpawnPoints.Length)
+        if (inParams.Players.Length > spawnPoints.Length)
         {
-            Debug.LogError($"Match started with {Params.playerCount} players but level only has {SpawnPoints.Length} spawn locations");
+            Debug.LogError($"Match started with {inParams.Players.Length} players but level only has {spawnPoints.Length} spawn locations");
             return;
         }
 
-        var Gamepads = Gamepad.all;
-        if (Params.playerCount > Gamepads.Count)
-        {
-            Debug.LogError($"Match started with {Params.playerCount} players but only {Gamepads.Count} gamepad(s) are connected");
-            return;
-        }
-
-        int[] PlayerSpawnOrder = PermuteNumbers(Params.playerCount);
+        uint[] PlayerSpawnOrder = PermuteNumbers(inParams.Players.Length);
         
-        for (int i = 0; i < Params.playerCount; i++)
+        for (uint i = 0; i < inParams.Players.Length; i++)
         {
-            var Player = Instantiate(PlayerControllerPrefab, SpawnPoints[i].transform.position, Quaternion.identity);
-            Player.Init(new PlayerControllerData(Gamepads[PlayerSpawnOrder[i]]));
-            Players.Add(Player);
+            var player = Instantiate(playerControllerPrefab, spawnPoints[PlayerSpawnOrder[i]].transform.position, Quaternion.identity);
+            player.Init(i);
+            PlayerMatchData data = new PlayerMatchData();
+            data.LobbyData = inParams.Players[i];
+            data.Gamepad = Gamepad.all[(int)i];
+            data.Controller = player;
+            players.Add(i,data);
         }
     }
 
-    public static int[] PermuteNumbers(int count)
+
+    public void Update()
     {
-        int[] output = new int[count];
+        foreach(var player in players)
+        {
+            player.Value.Controller.Tick(player.Value.Gamepad);
+        }
+    }
+
+    private static uint[] PermuteNumbers(int count)
+    {
+        uint[] output = new uint[count];
         HashSet<int> UsedInts = new HashSet<int>();
         Random random = new Random();
         for (int i = 0; i < count; i++)
@@ -55,7 +68,7 @@ public class MatchManager : MonoBehaviour
                 v = random.NextInt(count);
             }
 
-            output[i] = v;
+            output[i] = (uint)v;
         }
 
         return output;
