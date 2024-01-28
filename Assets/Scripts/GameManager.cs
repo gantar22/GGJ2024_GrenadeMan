@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
         Uninit,
         Lobby,
         Match,
+        EndMatch,
     }
 
     [Serializable]
@@ -23,6 +24,9 @@ public class GameManager : MonoBehaviour
         public int LevelIndex;//-1 for random/uninit
         [SerializeField]
         public PlayerLobbyData[] PlayerInfo;
+
+        [HideInInspector] public float? TimeLeftTillTransistion;
+        [HideInInspector] public MatchResults? PreviousResults;
 
         public static GameState Lobby()
         {
@@ -84,17 +88,35 @@ public class GameManager : MonoBehaviour
                 LobbyManager.Tick();
                 break;
             case GameStateFlag.Match:
+                var results = Levels[gameState.LevelIndex].Tick();
+                if (results.HasValue)
+                {
+                    gameState.TimeLeftTillTransistion = 4f;
+                    gameState.flag = GameStateFlag.EndMatch;
+                    gameState.PreviousResults = results;
+                }
+                break;
+            case GameStateFlag.EndMatch:
                 Levels[gameState.LevelIndex].Tick();
+                gameState.TimeLeftTillTransistion -= Time.deltaTime;
+                if (gameState.TimeLeftTillTransistion < 0)
+                {
+                    gameState.TimeLeftTillTransistion = null;
+                    Levels[gameState.LevelIndex].CleanUp();
+                    Levels[gameState.LevelIndex].gameObject.SetActive(false);
+                    GoToLobby(gameState.PlayerInfo,gameState.PreviousResults.Value.Winner);
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
 
-    void GoToLobby(PlayerLobbyData[] inPlayers)
+    void GoToLobby(PlayerLobbyData[] inPlayers, int? inWinner = null)
     {
         gameState.flag = GameStateFlag.Lobby;
         gameState.LevelIndex = -1;
+        LobbyManager.gameObject.SetActive(true);
         //TODO the callback here is probably not the greatest, we could just poll and not have to invert control flow like this
         LobbyManager.PerformLobby(inPlayers,output =>
         {

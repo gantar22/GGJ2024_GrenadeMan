@@ -511,6 +511,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df4babc0fb2257a4bbc363bf06681ca5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  FuseTime: 3.5
+  KillRadius: 3
   MainRB: {fileID: 1890994090448963680}
   PinRB: {fileID: 5998026472509803987}
   Highlight: {fileID: 3073258146339454039}
+  PinJoint: {fileID: 7281334150140485877}
+  ExplosionParticles: {fileID: 7854887720557246550, guid: a219c98cd49536e4cb3ad0271f57c510, type: 3}

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -18,6 +19,7 @@ public struct PlayerMatchData
 {
     public PlayerController Controller;
     public PlayerLobbyData LobbyData;
+    public bool Alive;
 }
 
 [Serializable]
@@ -32,6 +34,11 @@ public struct GrenadeSpawnPoint
 public struct GrenadeSpawner
 {
     public float TimeLeft;
+}
+
+public struct MatchResults
+{
+    public int? Winner;//null for everyone died
 }
 
 public class MatchManager : MonoBehaviour
@@ -62,9 +69,12 @@ public class MatchManager : MonoBehaviour
         {
             var player = Instantiate(inPlayerControllerPrefab, spawnPoints[PlayerSpawnOrder[i]].transform.position, Quaternion.identity);
             player.Init(inParams.Players[i].Color);
-            PlayerMatchData data = new PlayerMatchData();
-            data.LobbyData = inParams.Players[i];
-            data.Controller = player;
+            PlayerMatchData data = new PlayerMatchData
+            {
+                LobbyData = inParams.Players[i],
+                Controller = player,
+                Alive = true
+            };
             players.Add(i,data);
         }
 
@@ -73,7 +83,7 @@ public class MatchManager : MonoBehaviour
     }
 
 
-    public void Tick()
+    public MatchResults? Tick()
     {
         var gamepads = Gamepad.all;
         foreach(var player in players)
@@ -81,7 +91,12 @@ public class MatchManager : MonoBehaviour
             Gamepad gamepad = gamepads.Count > player.Key ? gamepads[(int)player.Key] : null;
             Grenade NearestGrenade = ActiveGrenades
                 .OrderBy(_ => Vector2.Distance(player.Value.Controller.PickupPoint.position, _.transform.position))
-                .FirstOrDefault(_ => Vector2.Distance(player.Value.Controller.PickupPoint.position, _.transform.position) < Tuning.GrabDistance);
+                .FirstOrDefault(_ =>
+                {
+                    var VectorToGrenade = _.transform.position - player.Value.Controller.PickupPoint.position;
+                    
+                    return Vector2.Dot(VectorToGrenade,-player.Value.Controller.VisualParts.transform.right) > -.1f &&  VectorToGrenade.magnitude < Tuning.GrabDistance;
+                });
             player.Value.Controller.Tick(gamepad,NearestGrenade);
         }
 
@@ -105,11 +120,43 @@ public class MatchManager : MonoBehaviour
                 grenade.FuseTimeLeft -= Time.deltaTime;
                 if (grenade.FuseTimeLeft < 0f)
                 {
-                    Destroy(grenade);
+                    grenade.Explode();
+                    var deadPlayers = new List<uint>();
+                    foreach (var player in players)
+                    {
+                        var dist = Vector3.Distance(grenade.transform.position, player.Value.Controller.transform.position);
+                        if (dist < grenade.KillRadius)
+                        {
+                            player.Value.Controller.Kill();
+                            deadPlayers.Add(player.Key);
+                        }
+                    }
+
+                    foreach (var id in deadPlayers)
+                    {
+                        var data = players[id];
+                        data.Alive = false;
+                        players[id] = data;
+                    }
+                    Destroy(grenade.PinRB.gameObject);
+                    Destroy(grenade.gameObject);
                     //TODO do explosion logic
                     ActiveGrenades.RemoveAt(i);
                 }
             }
+        }
+
+
+        if (players.Values.Count(_ => _.Alive) < 2)
+        {
+            return new MatchResults()
+            {
+                Winner = players.Values.Where(_ => _.Alive).Select((value, key) => (int?)key).FirstOrDefault(),
+            };
+        }
+        else
+        {
+            return null;
         }
     }
 
@@ -129,5 +176,17 @@ public class MatchManager : MonoBehaviour
         }
 
         return output;
+    }
+
+    public void CleanUp()
+    {
+        foreach (var player in players)
+        {
+            player.Value.Controller.CleanUp();
+            Destroy(player.Value.Controller.gameObject);
+        }
+        players.Clear();
+        ActiveGrenades.Clear();
+        grenadeSpawners = null;
     }
 }
