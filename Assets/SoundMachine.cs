@@ -5,6 +5,8 @@ using UnityEngine.Pool;
 
 public class SoundMachine : MonoBehaviour
 {
+    public static SoundMachine Instance;
+
     [SerializeField] GameObject SoundPoolMember;
     public enum PoolType
     {
@@ -64,6 +66,7 @@ public class SoundMachine : MonoBehaviour
     private void Awake()
     {
         _soundPool = new ObjectPool<AudioSource>(CreatePooledItem, OnTakeFromPool, OnReturnedToPool, OnDestroyPoolObject, collectionChecks, 20,maxPoolSize);
+        SoundMachine.Instance = this;
     }
 
     [ContextMenu("Test")]
