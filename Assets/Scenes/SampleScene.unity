@@ -595,7 +595,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4adee2295a8b9bb409955ff9f2af8359, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PlayerControllerPrefab: {fileID: 4679908129602979614, guid: f4e80e4b46a42fe40a8abce155742ead, type: 3}
+  PlayerControllerPrefab: {fileID: 8130941659317622824, guid: e2c6411d2555e744cb94f8c750482a64, type: 3}
+  GrenadePrefab: {fileID: 5782655652972092086, guid: 6e03bbbb1ae188c49900985c7b33c011, type: 3}
+  Tuning: {fileID: 11400000, guid: 47cd5f3814c236f468a955fffedfeb9d, type: 2}
   LevelPrefabs:
   - {fileID: 9138423148057079130, guid: 5f4a0b6c160cd6849970d23df5bc0c8c, type: 3}
   LobbyManager: {fileID: 2087161321}
@@ -604,7 +606,9 @@ MonoBehaviour:
     LevelIndex: -1
     PlayerInfo:
     - ID: 0
+      Color: {r: 1, g: 0, b: 0, a: 1}
     - ID: 1
+      Color: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &2132169736
 Transform:
   m_ObjectHideFlags: 0
