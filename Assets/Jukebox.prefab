@@ -47,8 +47,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clips:
-  - {fileID: 8300000, guid: 9ce12808442e53e449fc14d0c0797a3c, type: 3}
-  - {fileID: 8300000, guid: 3f20a49a78b85fd4eb596987f3449399, type: 3}
+  - {fileID: 8300000, guid: 3b4b5839b32003c4785ef5bd38421e04, type: 3}
+  - {fileID: 8300000, guid: 6583c036fc040f544ae6d51b5bb72af9, type: 3}
   - {fileID: 8300000, guid: af21deeea17b50e40964fa21e5859321, type: 3}
   - {fileID: 8300000, guid: 58f207650c5e52b48aaa12224756670f, type: 3}
   - {fileID: 8300000, guid: 11ceb3d8b4b1d784ca405df32d62fed4, type: 3}
@@ -56,6 +56,7 @@ MonoBehaviour:
   - {fileID: 529120021043411222}
   - {fileID: 5431902717624856260}
   mixer: {fileID: 24100000, guid: 6e68272afeb05254fb3604821efc9db1, type: 2}
+  StartMuffled: 0
 --- !u!82 &529120021043411222
 AudioSource:
   m_ObjectHideFlags: 0
@@ -70,7 +71,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 0
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
@@ -166,7 +167,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 0
   m_Pitch: 1
-  Loop: 1
+  Loop: 0
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
