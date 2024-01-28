@@ -17,13 +17,14 @@ public enum PlayerState
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] public GameObject VisualParts;
+    [SerializeField] public SpriteRenderer[] Colorables;
     [SerializeField] private PlayerTuning Tuning;
-    [SerializeField] private Rigidbody2D rigidbody;
+    [SerializeField] public Rigidbody2D rigidbody;
     [SerializeField] private Animator Animator;
     [SerializeField] private Transform GrenadeHolder;
     [SerializeField] public Transform PickupPoint;
     [SerializeField] public ThrowArrow ThrowArrow;
-
+    [SerializeField] public Rigidbody2D[] Gibblets;
     [Serializable]
     public struct RayCastMarkUp
     {
@@ -39,6 +40,7 @@ public class PlayerController : MonoBehaviour
     private float timeSinceJumpPressed = Mathf.Infinity;
     private float throwAlpha = 0f;
     private Vector2 throwAngle = Vector2.right;
+    private List<Rigidbody2D> ActiveGibs = new List<Rigidbody2D>();
 
     private Grenade PossibleHeldGrenade = null;
     private Grenade PossiblePreviouslyColoredGrenade;
@@ -49,6 +51,10 @@ public class PlayerController : MonoBehaviour
     public void Init(Color inColor)
     {
         color = inColor;
+        foreach (var g in Colorables)
+        {
+            g.color = inColor;
+        }
     }
 
     void UpdateTimers(Gamepad gamepad)
@@ -91,13 +97,15 @@ public class PlayerController : MonoBehaviour
             {
                 if (PossibleHeldGrenade)
                 {
-                    PossibleHeldGrenade.Prime();
+                    Animator.SetTrigger("Pull");
+                    PossibleHeldGrenade.Prime(new Vector2(.8f,UnityEngine.Random.value * .5f * VisualParts.transform.right.x),ForceMode2D.Impulse);
                 }
             }
         }
         switch (playerState)
         {
             case PlayerState.Normal:
+                Animator.SetBool("Throwing",false);
                 if (gamepad != null)
                 {
                     PerformMovement(gamepad);
@@ -138,6 +146,7 @@ public class PlayerController : MonoBehaviour
                 break;
             case PlayerState.Throwing:
                 Animator.SetBool("Running",false);
+                Animator.SetBool("Throwing",true);
                 if (gamepad != null)
                 {
                     ThrowArrow.SetActive(true);
@@ -227,6 +236,7 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        Animator.SetTrigger("Throw");
         PossibleHeldGrenade = null;
         
         //move grenade to outside of you then launch with alpha power
@@ -266,11 +276,43 @@ public class PlayerController : MonoBehaviour
         return false;
     }
 
-    public void Kill()
+    public void Kill(Grenade killingGrenade)
     {
+        var randomDirs = new List<Vector2>();
+        for (int i = 0; i < Gibblets.Length; i++)
+        {
+            float theta = ((float)i / Gibblets.Length) * Mathf.PI;
+            randomDirs.Add(new Vector2(Mathf.Sin(theta),Mathf.Cos(theta)));
+        }
+
+        for (var i = 0; i < Gibblets.Length; i++)
+        {
+            var gibblet = Gibblets[i];
+            var gib = Instantiate(gibblet, transform.position, Quaternion.identity);
+            if (killingGrenade)
+            {
+                Vector2 genadeDir = (transform.position - killingGrenade.transform.position);
+                gib.velocity = Vector2.up * Tuning.JumpForce * .5f +
+                               genadeDir.normalized * (1 - genadeDir.magnitude / killingGrenade.ExplosionRadius) * killingGrenade.ExplosionForcePlayers +
+                               randomDirs[i];
+            }
+            else
+            {
+                gib.velocity = randomDirs[i] + Vector2.up * 2.5f * Tuning.JumpForce;
+            }
+            gib.GetComponent<SpriteRenderer>().color = color; //BAD GET COMPONENT CALL
+            ActiveGibs.Add(gib);
+            // TODO add force to gibs
+        }
+
+        gameObject.SetActive(false);
     }
 
     public void CleanUp()
     {
+        foreach (var gib in ActiveGibs)
+        {
+            Destroy(gib.gameObject);
+        }
     }
 }

@@ -374,7 +374,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 0
 --- !u!58 &7053537933870166591
 CircleCollider2D:
@@ -512,7 +512,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   FuseTime: 3.5
-  KillRadius: 3
+  ChainReactionDelay: 0.4
+  KillRadius: 2
+  ExplosionRadius: 3.25
+  ExplosionForceGrenades: 20
+  ExplosionForceGrenadesUpwardPart: 8
+  ExplosionForcePlayers: 80
+  ExplosionForcePlayersUpwardPart: 10
   MainRB: {fileID: 1890994090448963680}
   PinRB: {fileID: 5998026472509803987}
   Highlight: {fileID: 3073258146339454039}

@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     {
         Uninit,
         Lobby,
+        EndLobby,
         Match,
         EndMatch,
     }
@@ -45,6 +46,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MatchManager[] LevelPrefabs;
 
     [SerializeField] private LobbyManager LobbyManager;
+    [SerializeField] private Colorset Colors;
 
     public GameState gameState = GameState.Lobby();
 
@@ -87,6 +89,15 @@ public class GameManager : MonoBehaviour
             case GameStateFlag.Lobby:
                 LobbyManager.Tick();
                 break;
+            case GameStateFlag.EndLobby:
+                gameState.TimeLeftTillTransistion -= Time.deltaTime;
+                LobbyManager.CountDown(gameState.TimeLeftTillTransistion.Value);
+                if (gameState.TimeLeftTillTransistion < 0)
+                {
+                    LobbyManager.gameObject.SetActive(false);
+                    GoToLevel(gameState.PlayerInfo);
+                }
+                break;
             case GameStateFlag.Match:
                 var results = Levels[gameState.LevelIndex].Tick();
                 if (results.HasValue)
@@ -118,9 +129,11 @@ public class GameManager : MonoBehaviour
         gameState.LevelIndex = -1;
         LobbyManager.gameObject.SetActive(true);
         //TODO the callback here is probably not the greatest, we could just poll and not have to invert control flow like this
-        LobbyManager.PerformLobby(inPlayers,output =>
+        LobbyManager.PerformLobby(inPlayers,Colors.colors,output =>
         {
-            GoToLevel(output.PlayerData);
+            gameState.flag = GameStateFlag.EndLobby;
+            gameState.TimeLeftTillTransistion = 3;
+            gameState.PlayerInfo = output.PlayerData;
         });
     }
 

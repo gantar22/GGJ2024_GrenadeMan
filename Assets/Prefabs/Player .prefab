@@ -49,12 +49,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   VisualParts: {fileID: 4954383835624511357}
+  Colorables:
+  - {fileID: 5381715265084570194}
   Tuning: {fileID: 11400000, guid: 47cd5f3814c236f468a955fffedfeb9d, type: 2}
   rigidbody: {fileID: 4555993141578061177}
   Animator: {fileID: 5063654988292746962}
   GrenadeHolder: {fileID: 7928309058687512948}
   PickupPoint: {fileID: 8606311023033678964}
   ThrowArrow: {fileID: 1061723825340296275}
+  Gibblets:
+  - {fileID: 2710156476427658634, guid: e2482d0c0cb9c71438a7abeff0380a16, type: 3}
+  - {fileID: 5986201368047048492, guid: 70a251d505150fb4f8fe51968beb6519, type: 3}
+  - {fileID: 1546094118319367230, guid: d0a78ae2eeb0084438f54f3a16970410, type: 3}
+  - {fileID: 6308035522707914515, guid: 245488a88135c1b429b91324992867b9, type: 3}
   GroundRayCastPoints:
   - Start: {fileID: 8947961938766911510}
     End: {fileID: 4147754993994468479}

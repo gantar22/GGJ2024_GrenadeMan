@@ -8,26 +8,35 @@ using UnityEngine.Serialization;
 
 public class PlayerLobbyIcon : MonoBehaviour
 {
-    [SerializeField] private UnityEvent joinedEvent;
-    [SerializeField] private UnityEvent leaveEvent;
-    [SerializeField] private UnityEvent readyEvent;
-    [SerializeField] private UnityEvent unreadyEvent;
-    [SerializeField] private UnityEvent clearEvent;
-    
+    [SerializeField] public UnityEvent joinedEvent;
+    [SerializeField] public UnityEvent leaveEvent;
+    [SerializeField] public UnityEvent readyEvent;
+    [SerializeField] public UnityEvent unreadyEvent;
+    [SerializeField] public UnityEvent clearEvent;
+
+    [SerializeField] private Graphic[] Colorables;
     
     public int ID;
     public bool bActive = false;
     public bool bReady = false;
-    
-    public void Init(int inID)
+
+    public Color color;
+    private Color[] colorOptions;
+    public void Init(int inID,Color inColor,Color[] inColorOptions)
     {
         ID = inID;
         unreadyEvent.Invoke();
         leaveEvent.Invoke();
         bActive = false;
         bReady = false;
+        color = inColor;
+        colorOptions = inColorOptions;
+        foreach (var g in Colorables)
+        {
+            g.color = color;
+        }
     }
-
+    
     public void Tick()
     {
         HandleInput();
