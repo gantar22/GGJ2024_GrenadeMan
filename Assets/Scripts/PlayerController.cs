@@ -17,13 +17,14 @@ public enum PlayerState
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] public GameObject VisualParts;
+    [SerializeField] public SpriteRenderer[] Colorables;
     [SerializeField] private PlayerTuning Tuning;
     [SerializeField] private Rigidbody2D rigidbody;
     [SerializeField] private Animator Animator;
     [SerializeField] private Transform GrenadeHolder;
     [SerializeField] public Transform PickupPoint;
     [SerializeField] public ThrowArrow ThrowArrow;
-
+    [SerializeField] public Rigidbody2D[] Gibblets;
     [Serializable]
     public struct RayCastMarkUp
     {
@@ -39,6 +40,7 @@ public class PlayerController : MonoBehaviour
     private float timeSinceJumpPressed = Mathf.Infinity;
     private float throwAlpha = 0f;
     private Vector2 throwAngle = Vector2.right;
+    private List<Rigidbody2D> ActiveGibs = new List<Rigidbody2D>();
 
     private Grenade PossibleHeldGrenade = null;
     private Grenade PossiblePreviouslyColoredGrenade;
@@ -49,6 +51,10 @@ public class PlayerController : MonoBehaviour
     public void Init(Color inColor)
     {
         color = inColor;
+        foreach (var g in Colorables)
+        {
+            g.color = inColor;
+        }
     }
 
     void UpdateTimers(Gamepad gamepad)
@@ -268,9 +274,20 @@ public class PlayerController : MonoBehaviour
 
     public void Kill()
     {
+        foreach (var gibblet in Gibblets)
+        {
+            var gib = Instantiate(gibblet, transform.position, Quaternion.identity);
+            gib.GetComponent<SpriteRenderer>().color = color;//BAD GET COMPONENT CALL
+            ActiveGibs.Add(gib);
+        }
+        gameObject.SetActive(false);
     }
 
     public void CleanUp()
     {
+        foreach (var gib in ActiveGibs)
+        {
+            Destroy(gib.gameObject);
+        }
     }
 }

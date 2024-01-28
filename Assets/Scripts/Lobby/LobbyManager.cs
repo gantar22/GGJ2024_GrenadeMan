@@ -20,15 +20,19 @@ public struct LobbyOutput
 public class LobbyManager : MonoBehaviour
 {
     [SerializeField] private PlayerLobbyIcon[] Icons = null;
+    [SerializeField] private TMPro.TMP_Text CountdownText;
     private Action<LobbyOutput> onFinish = null;
-    public void PerformLobby(PlayerLobbyData[] inPlayers, Action<LobbyOutput> inOnFinish)
+    public void PerformLobby(PlayerLobbyData[] inPlayers,Color[] Colors, Action<LobbyOutput> inOnFinish)
     {
+        CountdownText.text = "";
         for (int i = 0; i < Icons.Length; i++)
         {
-            Icons[i].Init(i);
+            Icons[i].Init(i,Colors[i],Colors);
             if (inPlayers.Any(_ => _.ID == i))
             {
+                Icons[i].joinedEvent.Invoke();
                 Icons[i].bActive = true;
+                
             }
         }
         onFinish = inOnFinish;
@@ -48,7 +52,7 @@ public class LobbyManager : MonoBehaviour
     private void Finish()
     {
         LobbyOutput output = new LobbyOutput();
-        output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData{ID = _.ID, Color = Color.red}).ToArray();
+        output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData{ID = _.ID, Color = _.color}).ToArray();
         
         var callback = onFinish;
         Clear();
@@ -63,8 +67,13 @@ public class LobbyManager : MonoBehaviour
         }
 
         if (Icons.All(_=>_.bReady || !_.bActive) && Icons.Count(_=>_.bActive) > 1)
-        {//todo count down
+        {
             Finish();
         }
+    }
+
+    public void CountDown(float TimeLeft)
+    {
+        CountdownText.text = $"{1 + (int)TimeLeft}!";
     }
 }

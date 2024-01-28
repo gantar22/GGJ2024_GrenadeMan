@@ -128,6 +128,7 @@ public class MatchManager : MonoBehaviour
                         if (dist < grenade.KillRadius)
                         {
                             player.Value.Controller.Kill();
+                            
                             deadPlayers.Add(player.Key);
                         }
                     }
@@ -186,6 +187,11 @@ public class MatchManager : MonoBehaviour
             Destroy(player.Value.Controller.gameObject);
         }
         players.Clear();
+        foreach (var grenade in ActiveGrenades)
+        {
+            Destroy(grenade.PinJoint.gameObject);
+            Destroy(grenade.gameObject);
+        }
         ActiveGrenades.Clear();
         grenadeSpawners = null;
     }

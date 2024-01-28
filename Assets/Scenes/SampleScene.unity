@@ -402,6 +402,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 353479346360477647, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 353479346360477647, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -418,6 +422,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 834906231016738363, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 834906231016738363, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -429,12 +437,32 @@ PrefabInstance:
       propertyPath: m_Name
       value: LobbyManager
       objectReference: {fileID: 0}
+    - target: {fileID: 2608135475871042429, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2608135475871042429, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SortingLayer
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2608135475871042429, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SortingOrder
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2608135475871042429, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SortingLayerID
+      value: -1673852825
+      objectReference: {fileID: 0}
     - target: {fileID: 2854979832174616929, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2854979832174616929, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
       propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2854979832174616929, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SizeDelta.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2854979832174616929, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
@@ -534,16 +562,16 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8608892719694686950, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8608892719694686950, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
       propertyPath: m_AnchoredPosition.x
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8608892719694686950, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8838092200237227373, guid: 1a2a3308c9c4d02468c67f3b33bd9b48, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -0.109375
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -601,8 +629,9 @@ MonoBehaviour:
   LevelPrefabs:
   - {fileID: 9138423148057079130, guid: 5f4a0b6c160cd6849970d23df5bc0c8c, type: 3}
   LobbyManager: {fileID: 2087161321}
+  Colors: {fileID: 11400000, guid: 1281072566373a2499ed967793d06933, type: 2}
   gameState:
-    flag: 2
+    flag: 1
     LevelIndex: -1
     PlayerInfo:
     - ID: 0
