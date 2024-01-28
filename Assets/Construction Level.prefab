@@ -33683,6 +33683,37 @@ Transform:
   - {fileID: 6766946821575953202}
   m_Father: {fileID: 481690947979705183}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7843452789230488124
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8103614933886839047}
+  m_Layer: 0
+  m_Name: DeathMeter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8103614933886839047
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7843452789230488124}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 481690947979705183}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7849123742705677925
 GameObject:
   m_ObjectHideFlags: 0
@@ -33721,6 +33752,7 @@ Transform:
   - {fileID: 6105611120765562739}
   - {fileID: 5926834312362675424}
   - {fileID: 4429333139271474243}
+  - {fileID: 8103614933886839047}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!156049354 &8410053979221421604
@@ -33765,6 +33797,7 @@ MonoBehaviour:
   - MinSpawnDelay: 10
     MaxSpawnDelay: 10
     Location: {fileID: 1448368824270763346}
+  DeathLevel: {fileID: 8103614933886839047}
 --- !u!1 &9210908681547582195
 GameObject:
   m_ObjectHideFlags: 0

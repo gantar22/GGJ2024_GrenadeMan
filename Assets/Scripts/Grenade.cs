@@ -27,6 +27,7 @@ public class Grenade : MonoBehaviour
         {
             return;
         }
+        SoundMachine.Instance.PlaySound("Pin_Pull");
         FuseTimeLeft = FuseTime;
         PinRB.transform.SetParent(null,true);
         PinJoint.enabled = false;
@@ -37,5 +38,6 @@ public class Grenade : MonoBehaviour
     public void Explode()
     {
         Instantiate(ExplosionParticles, transform.position, quaternion.Euler(-90,0,0));
+        SoundMachine.Instance.PlaySound("Explosion");
     }
 }

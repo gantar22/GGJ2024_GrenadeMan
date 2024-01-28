@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
         public Transform End;
     }
     [SerializeField] private RayCastMarkUp[] GroundRayCastPoints;
+    [SerializeField] public GameObject Crown;
     public PlayerState playerState;
     private Color color;
     private float movementAcceleration = 0f;
@@ -55,6 +56,7 @@ public class PlayerController : MonoBehaviour
         {
             g.color = inColor;
         }
+        Crown.SetActive(false);
     }
 
     void UpdateTimers(Gamepad gamepad)
@@ -237,13 +239,14 @@ public class PlayerController : MonoBehaviour
         }
 
         Animator.SetTrigger("Throw");
+        SoundMachine.Instance.PlaySound("Throw");
         PossibleHeldGrenade = null;
         
         //move grenade to outside of you then launch with alpha power
         var alpha = Mathf.PingPong(throwAlpha, 1f);
         throwAlpha = 0f;
         grenade.transform.SetParent(null,true);
-        grenade.transform.position = transform.position + (Vector3)throwAngle.normalized * (1f * alpha);
+        grenade.transform.position = transform.position + (Vector3)throwAngle.normalized * (1f * alpha); // TODO deal with popping
         grenade.MainRB.simulated = true;
         grenade.PinRB.simulated = true;
         grenade.MainRB.AddForce(throwAngle.normalized * (alpha * ThrowStrength),ForceMode2D.Impulse);
@@ -278,6 +281,8 @@ public class PlayerController : MonoBehaviour
 
     public void Kill(Grenade killingGrenade)
     {
+        int DeathSoundId = UnityEngine.Random.Range(1, 4);
+        SoundMachine.Instance.PlaySound($"Death_{DeathSoundId}");
         var randomDirs = new List<Vector2>();
         for (int i = 0; i < Gibblets.Length; i++)
         {

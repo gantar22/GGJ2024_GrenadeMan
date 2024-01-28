@@ -154,7 +154,7 @@ public class MatchManager : MonoBehaviour
                         var diff = otherGrenade.transform.position - grenade.transform.position;
                         if (diff.magnitude < grenade.ExplosionRadius)
                         {
-                            if (diff.magnitude < grenade.KillRadius)
+                            if (diff.magnitude < grenade.KillRadius * .66f)
                             {
                                 otherGrenade.Prime(new Vector2(.8f,UnityEngine.Random.value - .5f),ForceMode2D.Impulse);
                                 otherGrenade.FuseTimeLeft = Mathf.Min(otherGrenade.FuseTimeLeft.Value,
@@ -189,9 +189,14 @@ public class MatchManager : MonoBehaviour
 
         if (players.Values.Count(_ => _.Alive) < 2)
         {
+            var Winner = players.Where(_ => _.Value.Alive);
+            foreach (var winner in Winner)
+            {
+                winner.Value.Controller.Crown.SetActive(true);
+            }
             return new MatchResults()
             {
-                Winner = players.Values.Where(_ => _.Alive).Select((value, key) => (int?)key).FirstOrDefault(),
+                Winner = Winner.Select(_ => (int?)_.Key).FirstOrDefault(),
             };
         }
         else

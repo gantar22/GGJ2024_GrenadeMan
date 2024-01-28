@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -47,6 +48,7 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private LobbyManager LobbyManager;
     [SerializeField] private Colorset Colors;
+    [SerializeField] private TMPro.TMP_Text WinnerText;
 
     public GameState gameState = GameState.Lobby();
 
@@ -61,9 +63,11 @@ public class GameManager : MonoBehaviour
             case GameStateFlag.Uninit:
                 break;
             case GameStateFlag.Lobby:
+                Jukebox.Instance.ToggleMuffle(true);
                 GoToLobby(gameState.PlayerInfo);
                 break;
             case GameStateFlag.Match:
+                Jukebox.Instance.ToggleMuffle(false);
                 GoToLevel(gameState.PlayerInfo,gameState.LevelIndex != -1 ? gameState.LevelIndex : null);
                 break;
             default:
@@ -94,7 +98,10 @@ public class GameManager : MonoBehaviour
                 LobbyManager.CountDown(gameState.TimeLeftTillTransistion.Value);
                 if (gameState.TimeLeftTillTransistion < 0)
                 {
+                    LobbyManager.Clear();
                     LobbyManager.gameObject.SetActive(false);
+                    Jukebox.Instance.ToggleMuffle(false);
+                    Jukebox.Instance.ShuffleSong();
                     GoToLevel(gameState.PlayerInfo);
                 }
                 break;
@@ -104,6 +111,16 @@ public class GameManager : MonoBehaviour
                 {
                     gameState.TimeLeftTillTransistion = 4f;
                     gameState.flag = GameStateFlag.EndMatch;
+                    WinnerText.gameObject.SetActive(true);
+                    if (results.Value.Winner.HasValue)
+                    {
+                        var winnerData = gameState.PlayerInfo.First(_ => _.ID == results.Value.Winner);
+                        WinnerText.text = $"Player <color=#{winnerData.Color.ToHexString()}>{results.Value.Winner + 1}</color> Won!";
+                    }
+                    else
+                    {
+                        WinnerText.text = $"Everyone died!";
+                    }
                     gameState.PreviousResults = results;
                 }
                 break;
@@ -115,6 +132,9 @@ public class GameManager : MonoBehaviour
                     gameState.TimeLeftTillTransistion = null;
                     Levels[gameState.LevelIndex].CleanUp();
                     Levels[gameState.LevelIndex].gameObject.SetActive(false);
+                    WinnerText.text = "";
+                    WinnerText.gameObject.SetActive(false);
+                    Jukebox.Instance.ToggleMuffle(true);
                     GoToLobby(gameState.PlayerInfo,gameState.PreviousResults.Value.Winner);
                 }
                 break;
@@ -129,7 +149,7 @@ public class GameManager : MonoBehaviour
         gameState.LevelIndex = -1;
         LobbyManager.gameObject.SetActive(true);
         //TODO the callback here is probably not the greatest, we could just poll and not have to invert control flow like this
-        LobbyManager.PerformLobby(inPlayers,Colors.colors,output =>
+        LobbyManager.PerformLobby(inPlayers,Colors.colors,inWinner,output =>
         {
             gameState.flag = GameStateFlag.EndLobby;
             gameState.TimeLeftTillTransistion = 3;

@@ -13,6 +13,8 @@ public class PlayerLobbyIcon : MonoBehaviour
     [SerializeField] public UnityEvent readyEvent;
     [SerializeField] public UnityEvent unreadyEvent;
     [SerializeField] public UnityEvent clearEvent;
+    [SerializeField] public UnityEvent crownEvent;
+    [SerializeField] public UnityEvent unCrownEvent;
 
     [SerializeField] private Graphic[] Colorables;
     
@@ -88,5 +90,6 @@ public class PlayerLobbyIcon : MonoBehaviour
         bActive = false;
         ID = -1;
         clearEvent.Invoke();
+        unCrownEvent.Invoke();
     }
 }

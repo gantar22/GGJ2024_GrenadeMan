@@ -22,7 +22,7 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private PlayerLobbyIcon[] Icons = null;
     [SerializeField] private TMPro.TMP_Text CountdownText;
     private Action<LobbyOutput> onFinish = null;
-    public void PerformLobby(PlayerLobbyData[] inPlayers,Color[] Colors, Action<LobbyOutput> inOnFinish)
+    public void PerformLobby(PlayerLobbyData[] inPlayers,Color[] Colors,int? inWinner, Action<LobbyOutput> inOnFinish)
     {
         CountdownText.text = "";
         for (int i = 0; i < Icons.Length; i++)
@@ -32,13 +32,16 @@ public class LobbyManager : MonoBehaviour
             {
                 Icons[i].joinedEvent.Invoke();
                 Icons[i].bActive = true;
-                
+                if (inWinner.HasValue && inWinner.Value == i)
+                {
+                    Icons[i].crownEvent.Invoke();
+                }
             }
         }
         onFinish = inOnFinish;
     }
 
-    private void Clear()
+    public void Clear()
     {
         foreach (var icon in Icons)
         {
@@ -55,7 +58,6 @@ public class LobbyManager : MonoBehaviour
         output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData{ID = _.ID, Color = _.color}).ToArray();
         
         var callback = onFinish;
-        Clear();
         callback(output);
     }
 

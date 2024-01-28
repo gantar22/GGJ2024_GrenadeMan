@@ -74,15 +74,15 @@ public class Jukebox : MonoBehaviour
     readonly float muffleSpeed = 3f;
 
     [ContextMenu("Toggle Muffle")]
-    public void ToggleMuffle()
+    public void ToggleMuffle(bool inMuffle)
     {
         StopAllCoroutines();
-        StartCoroutine(MuffleLerp());
+        StartCoroutine(MuffleLerp(inMuffle));
     }
 
-    IEnumerator MuffleLerp()
+    IEnumerator MuffleLerp(bool inMuffled)
     {
-        _muffled = !_muffled;
+        _muffled = inMuffled;
 
         mixer.GetFloat("LowpassFreq", out float lowpassFreq);
         float targetFreq = _muffled ? 900f : 22000f;
