@@ -14,17 +14,15 @@ public struct MatchParams
 public struct PlayerMatchData
 {
     public PlayerController Controller;
-    public Gamepad Gamepad;
     public PlayerLobbyData LobbyData;
 }
 
 public class MatchManager : MonoBehaviour
 {
     [SerializeField] public GameObject[] spawnPoints;
-    [SerializeField] public PlayerController playerControllerPrefab;
 
     private Dictionary<uint, PlayerMatchData> players;
-    public void Init(MatchParams inParams)
+    public void Init(MatchParams inParams, PlayerController inPlayerControllerPrefab)
     {
         if (inParams.Players.Length > spawnPoints.Length)
         {
@@ -37,11 +35,10 @@ public class MatchManager : MonoBehaviour
         players = new Dictionary<uint, PlayerMatchData>();
         for (uint i = 0; i < inParams.Players.Length; i++)
         {
-            var player = Instantiate(playerControllerPrefab, spawnPoints[PlayerSpawnOrder[i]].transform.position, Quaternion.identity);
+            var player = Instantiate(inPlayerControllerPrefab, spawnPoints[PlayerSpawnOrder[i]].transform.position, Quaternion.identity);
             player.Init(i);
             PlayerMatchData data = new PlayerMatchData();
             data.LobbyData = inParams.Players[i];
-            data.Gamepad = Gamepad.all[(int)i];
             data.Controller = player;
             players.Add(i,data);
         }
@@ -50,9 +47,17 @@ public class MatchManager : MonoBehaviour
 
     public void Tick()
     {
+        var gamepads = Gamepad.all;
         foreach(var player in players)
         {
-            player.Value.Controller.Tick(player.Value.Gamepad);
+            if (player.Key < gamepads.Count)
+            {
+                player.Value.Controller.Tick(gamepads[(int)player.Key]);
+            }
+            else
+            {
+                player.Value.Controller.Tick(null);
+            }
         }
     }
 

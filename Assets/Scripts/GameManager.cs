@@ -33,6 +33,8 @@ public class GameManager : MonoBehaviour
             };
         }
     }
+
+    [SerializeField] private PlayerController PlayerControllerPrefab;
     
     [SerializeField] private MatchManager[] LevelPrefabs;
 
@@ -110,6 +112,6 @@ public class GameManager : MonoBehaviour
         {
             Players = inPlayerData,
         };
-        nextLevel.Init(matchParams);
+        nextLevel.Init(matchParams,PlayerControllerPrefab);
     }
 }
