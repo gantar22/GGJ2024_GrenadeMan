@@ -41,6 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Fake UI
+    uniqueID: 2621114471
+    locked: 0
   - name: Explosion
     uniqueID: 1326784061
     locked: 0
