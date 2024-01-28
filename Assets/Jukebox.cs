@@ -69,6 +69,14 @@ public class Jukebox : MonoBehaviour
         _shuffling = false;
     }
 
+    private void Update()
+    {
+        if(!_shuffling && tracks[_currentTrack].clip != null && (tracks[_currentTrack].time / tracks[_currentTrack].clip.length) > 0.95f)
+        {
+            ShuffleSong();
+        }
+    }
+
 
     bool _muffled;
     readonly float muffleSpeed = 3f;
