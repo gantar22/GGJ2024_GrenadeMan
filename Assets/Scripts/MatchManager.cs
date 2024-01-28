@@ -91,6 +91,7 @@ public class MatchManager : MonoBehaviour
         {
             Gamepad gamepad = gamepads.Count > player.Key ? gamepads[(int)player.Key] : null;
             Grenade NearestGrenade = ActiveGrenades
+                .Where(g=>!players.Any(_=>_.Value.Controller.PossibleHeldGrenade == g))
                 .OrderBy(_ => Vector2.Distance(player.Value.Controller.PickupPoint.position, _.transform.position))
                 .FirstOrDefault(_ =>
                 {

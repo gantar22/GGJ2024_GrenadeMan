@@ -101,7 +101,6 @@ public class GameManager : MonoBehaviour
                     LobbyManager.Clear();
                     LobbyManager.gameObject.SetActive(false);
                     Jukebox.Instance.ToggleMuffle(false);
-                    Jukebox.Instance.ShuffleSong();
                     GoToLevel(gameState.PlayerInfo);
                 }
                 break;

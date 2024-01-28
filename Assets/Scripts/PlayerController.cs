@@ -32,6 +32,8 @@ public class PlayerController : MonoBehaviour
         public Transform End;
     }
     [SerializeField] private RayCastMarkUp[] GroundRayCastPoints;
+    [SerializeField] private RayCastMarkUp[] WallLeftRayCastPoints;
+    [SerializeField] private RayCastMarkUp[] WallRightRayCastPoints;
     [SerializeField] public GameObject Crown;
     public PlayerState playerState;
     private Color color;
@@ -43,7 +45,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 throwAngle = Vector2.right;
     private List<Rigidbody2D> ActiveGibs = new List<Rigidbody2D>();
 
-    private Grenade PossibleHeldGrenade = null;
+    public Grenade PossibleHeldGrenade = null;
     private Grenade PossiblePreviouslyColoredGrenade;
     [SerializeField] private float ThrowChargeSpeed;
     [SerializeField] private float ThrowStrength = 10f;
@@ -183,7 +185,40 @@ public class PlayerController : MonoBehaviour
         var moveAxis = gamepad != null ? gamepad.leftStick.value.x : 0f;
         var targetXVel = moveAxis * Tuning.WalkSpeed;
         var newXVel = Mathf.SmoothDamp(rigidbody.velocity.x, targetXVel, ref movementAcceleration,Tuning.MovementSmoothTime,Tuning.MaxMovementAcceleration);
-        rigidbody.velocity = new Vector2(newXVel,rigidbody.velocity.y);
+        bool blocked = false;
+        {
+            if (moveAxis > .1f)
+            {
+                foreach (var markup in WallRightRayCastPoints)
+                {
+                    var castDir = markup.End.position - markup.Start.position;
+                    var hits = Physics2D.RaycastAll(markup.Start.position, castDir.normalized,castDir.magnitude);
+                    //Debug.DrawLine(markup.Start.position,markup.End.position,Color.red);
+                    if (hits.Any(_ => _.rigidbody != rigidbody))
+                    {
+                        blocked = true;
+                    }
+                }
+            }
+
+            if (moveAxis < -.1f)
+            {
+                foreach (var markup in WallLeftRayCastPoints)
+                {
+                    var castDir = markup.End.position - markup.Start.position;
+                    var hits = Physics2D.RaycastAll(markup.Start.position, castDir.normalized,castDir.magnitude);
+                    //Debug.DrawLine(markup.Start.position,markup.End.position,Color.red);
+                    if (hits.Any(_ => _.rigidbody != rigidbody))
+                    {
+                        blocked = true;
+                    }
+                }
+            }
+        }
+        if (!blocked)
+        {
+            rigidbody.velocity = new Vector2(newXVel,rigidbody.velocity.y);
+        }
         Animator.SetBool("Running",Mathf.Abs(moveAxis) > .05f);
         if (Mathf.Abs(moveAxis) > .05f)
         {
