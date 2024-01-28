@@ -45,6 +45,7 @@ public class MatchManager : MonoBehaviour
 {
     [SerializeField] public GameObject[] spawnPoints;
     [SerializeField] public GrenadeSpawnPoint[] grenadePoints;
+    [SerializeField] public Transform DeathLevel;
     private PlayerTuning Tuning;
 
     private GrenadeSpawner[] grenadeSpawners;
@@ -75,7 +76,7 @@ public class MatchManager : MonoBehaviour
                 Controller = player,
                 Alive = true
             };
-            players.Add(i,data);
+            players.Add((uint)inParams.Players[i].ID,data);
         }
 
         grenadeSpawners = grenadePoints
@@ -86,7 +87,7 @@ public class MatchManager : MonoBehaviour
     public MatchResults? Tick()
     {
         var gamepads = Gamepad.all;
-        foreach(var player in players)
+        foreach(var player in players.Where(_=>_.Value.Alive))
         {
             Gamepad gamepad = gamepads.Count > player.Key ? gamepads[(int)player.Key] : null;
             Grenade NearestGrenade = ActiveGrenades
@@ -119,15 +120,23 @@ public class MatchManager : MonoBehaviour
             {
                 grenade.FuseTimeLeft -= Time.deltaTime;
                 if (grenade.FuseTimeLeft < 0f)
-                {
+                {//Explode!
                     grenade.Explode();
                     var deadPlayers = new List<uint>();
-                    foreach (var player in players)
+                    foreach (var player in players.Where(_=>_.Value.Alive))
                     {
                         var dist = Vector3.Distance(grenade.transform.position, player.Value.Controller.transform.position);
+                        var diff = grenade.transform.position - player.Value.Controller.transform.position;
+                        if (dist < grenade.ExplosionRadius)
+                        {
+                            player.Value.Controller.rigidbody.AddForce(
+                                diff.normalized * (grenade.ExplosionForcePlayers * (1f/diff.sqrMagnitude)) 
+                                    + Vector3.up * (grenade.ExplosionForcePlayersUpwardPart * (1f/diff.sqrMagnitude))
+                                ,ForceMode2D.Impulse);
+                        }
                         if (dist < grenade.KillRadius)
                         {
-                            player.Value.Controller.Kill();
+                            player.Value.Controller.Kill(grenade);
                             
                             deadPlayers.Add(player.Key);
                         }
@@ -139,6 +148,26 @@ public class MatchManager : MonoBehaviour
                         data.Alive = false;
                         players[id] = data;
                     }
+
+                    foreach (var otherGrenade in ActiveGrenades)
+                    {
+                        var diff = otherGrenade.transform.position - grenade.transform.position;
+                        if (diff.magnitude < grenade.ExplosionRadius)
+                        {
+                            if (diff.magnitude < grenade.KillRadius)
+                            {
+                                otherGrenade.Prime(new Vector2(.8f,UnityEngine.Random.value - .5f),ForceMode2D.Impulse);
+                                otherGrenade.FuseTimeLeft = Mathf.Min(otherGrenade.FuseTimeLeft.Value,
+                                    otherGrenade.ChainReactionDelay);
+                            }
+
+                            var sqrDist = Mathf.Max(diff.sqrMagnitude,.2f);
+                            otherGrenade.MainRB.AddForce(
+                                diff.normalized * (otherGrenade.ExplosionForceGrenades * (1f/sqrDist)) 
+                                    + Vector3.up * (otherGrenade.ExplosionForceGrenadesUpwardPart * (1f/sqrDist)),
+                                ForceMode2D.Impulse);
+                        }
+                    }
                     Destroy(grenade.PinRB.gameObject);
                     Destroy(grenade.gameObject);
                     //TODO do explosion logic
@@ -147,6 +176,13 @@ public class MatchManager : MonoBehaviour
             }
         }
 
+        
+        var DeadPlayers = players.Where(_ => _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
+            .Select(_ => _.Key).ToArray();
+        foreach (var id in DeadPlayers)
+        {
+            players.Remove(id);
+        }
 
         if (players.Values.Count(_ => _.Alive) < 2)
         {

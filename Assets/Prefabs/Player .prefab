@@ -49,6 +49,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   VisualParts: {fileID: 4954383835624511357}
+  Colorables:
+  - {fileID: 5381715265084570194}
   Tuning: {fileID: 11400000, guid: 47cd5f3814c236f468a955fffedfeb9d, type: 2}
   rigidbody: {fileID: 4555993141578061177}
   Animator: {fileID: 5063654988292746962}
