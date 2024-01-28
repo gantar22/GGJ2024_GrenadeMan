@@ -19,8 +19,15 @@ public class Jukebox : MonoBehaviour
         Random.InitState(System.DateTime.Now.GetHashCode());
     }
 
+    public bool StartMuffled;
     private void Start()
     {
+        if(StartMuffled)
+        {
+            mixer.SetFloat("LowpassFreq", 900f);
+            mixer.SetFloat("ReverbRoom", -2000f);
+            _muffled = true;
+        }
         ShuffleSong();
     }
 
