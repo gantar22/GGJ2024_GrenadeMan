@@ -56,6 +56,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        Cursor.visible = false;
         SpawnLevels();
         LobbyManager.gameObject.SetActive(false);
         switch (gameState.flag)

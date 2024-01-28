@@ -53,6 +53,7 @@ public class MatchManager : MonoBehaviour
     
     private Dictionary<uint, PlayerMatchData> players = new Dictionary<uint, PlayerMatchData>();
     private List<Grenade> ActiveGrenades = new List<Grenade>();
+    private float TimeSinceStarted;
     public void Init(MatchParams inParams, PlayerController inPlayerControllerPrefab, Grenade inGrenadePrefab, PlayerTuning inTuning)
     {
         if (inParams.Players.Length > spawnPoints.Length)
@@ -61,6 +62,7 @@ public class MatchManager : MonoBehaviour
             return;
         }
 
+        TimeSinceStarted = 0;
         grenadePrefab = inGrenadePrefab;
         uint[] PlayerSpawnOrder = PermuteNumbers(inParams.Players.Length);
         Tuning = inTuning;
@@ -86,6 +88,7 @@ public class MatchManager : MonoBehaviour
 
     public MatchResults? Tick()
     {
+        TimeSinceStarted += Time.deltaTime;
         var gamepads = Gamepad.all;
         foreach(var player in players.Where(_=>_.Value.Alive))
         {
@@ -110,7 +113,8 @@ public class MatchManager : MonoBehaviour
                 var newGrenade = Instantiate(grenadePrefab, grenadePoints[i].Location.transform.position,Quaternion.Euler(0,0,UnityEngine.Random.value * 360));
                 ActiveGrenades.Add(newGrenade);
                 grenadeSpawners[i].TimeLeft =
-                    UnityEngine.Random.Range(grenadePoints[i].MinSpawnDelay, grenadePoints[i].MaxSpawnDelay);
+                    UnityEngine.Random.Range(grenadePoints[i].MinSpawnDelay, grenadePoints[i].MaxSpawnDelay)
+                    * Mathf.Min(.5f,60/(60+TimeSinceStarted * players.Values.Count(_=>!_.Alive)));
             }
         }
 
@@ -217,6 +221,8 @@ public class MatchManager : MonoBehaviour
             {
                 v = UnityEngine.Random.Range(0,count);
             }
+
+            UsedInts.Add(v);
 
             output[i] = (uint)v;
         }

@@ -16,7 +16,7 @@ MonoBehaviour:
   MovementSmoothTime: 0.075
   MaxMovementAcceleration: 500
   JumpForce: 5.5
-  JumpGraceDelay: 0.25
+  JumpGraceDelay: 0.2
   JumpButtonDuration: 0.2
   FallGravityMultiplier: 2.5
   GrabDistance: 1

@@ -194,7 +194,7 @@ public class PlayerController : MonoBehaviour
                     var castDir = markup.End.position - markup.Start.position;
                     var hits = Physics2D.RaycastAll(markup.Start.position, castDir.normalized,castDir.magnitude);
                     //Debug.DrawLine(markup.Start.position,markup.End.position,Color.red);
-                    if (hits.Any(_ => _.rigidbody != rigidbody))
+                    if (hits.Any(_ => _.rigidbody != rigidbody && Mathf.Abs(_.normal.y) < .2f))
                     {
                         blocked = true;
                     }
@@ -208,7 +208,7 @@ public class PlayerController : MonoBehaviour
                     var castDir = markup.End.position - markup.Start.position;
                     var hits = Physics2D.RaycastAll(markup.Start.position, castDir.normalized,castDir.magnitude);
                     //Debug.DrawLine(markup.Start.position,markup.End.position,Color.red);
-                    if (hits.Any(_ => _.rigidbody != rigidbody))
+                    if (hits.Any(_ => _.rigidbody != rigidbody && Mathf.Abs(_.normal.y) < .2f))
                     {
                         blocked = true;
                     }
@@ -281,7 +281,17 @@ public class PlayerController : MonoBehaviour
         var alpha = Mathf.PingPong(throwAlpha, 1f);
         throwAlpha = 0f;
         grenade.transform.SetParent(null,true);
-        grenade.transform.position = transform.position + (Vector3)throwAngle.normalized * (1f * alpha); // TODO deal with popping
+
+        Vector3 newLocation = transform.position + (Vector3)throwAngle.normalized * (1f * alpha);
+        {
+            var hits = Physics2D.RaycastAll(transform.position, throwAngle.normalized,alpha);
+            var blocks = hits.Where(_ => _.rigidbody != rigidbody).OrderBy(_ => Vector2.Distance(_.point, transform.position));
+            if (blocks.Any())
+            {
+                newLocation = transform.position;
+            }
+        }
+        grenade.transform.position = newLocation; // TODO deal with popping
         grenade.MainRB.simulated = true;
         grenade.PinRB.simulated = true;
         grenade.MainRB.AddForce(throwAngle.normalized * (alpha * ThrowStrength),ForceMode2D.Impulse);
