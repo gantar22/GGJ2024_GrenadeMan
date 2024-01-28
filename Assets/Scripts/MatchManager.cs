@@ -126,12 +126,12 @@ public class MatchManager : MonoBehaviour
                     foreach (var player in players.Where(_=>_.Value.Alive))
                     {
                         var dist = Vector3.Distance(grenade.transform.position, player.Value.Controller.transform.position);
-                        var diff = grenade.transform.position - player.Value.Controller.transform.position;
+                        var diff = player.Value.Controller.transform.position - grenade.transform.position;
                         if (dist < grenade.ExplosionRadius)
                         {
                             player.Value.Controller.rigidbody.AddForce(
-                                diff.normalized * (grenade.ExplosionForcePlayers * (1f/diff.sqrMagnitude)) 
-                                    + Vector3.up * (grenade.ExplosionForcePlayersUpwardPart * (1f/diff.sqrMagnitude))
+                                diff.normalized * (grenade.ExplosionForcePlayers * (1 - (dist/grenade.ExplosionRadius))) 
+                                    + Vector3.up * (grenade.ExplosionForcePlayersUpwardPart * (1 - dist/grenade.ExplosionRadius))
                                 ,ForceMode2D.Impulse);
                         }
                         if (dist < grenade.KillRadius)
@@ -177,11 +177,14 @@ public class MatchManager : MonoBehaviour
         }
 
         
-        var DeadPlayers = players.Where(_ => _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
+        var DeadPlayers = players.Where(_=>_.Value.Alive).Where(_ => _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
             .Select(_ => _.Key).ToArray();
         foreach (var id in DeadPlayers)
         {
-            players.Remove(id);
+            players[id].Controller.Kill(null);
+            var data = players[id];
+            data.Alive = false;
+            players[id] = data;
         }
 
         if (players.Values.Count(_ => _.Alive) < 2)

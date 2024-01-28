@@ -298,7 +298,7 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                gib.velocity = randomDirs[i];
+                gib.velocity = randomDirs[i] + Vector2.up * 2.5f * Tuning.JumpForce;
             }
             gib.GetComponent<SpriteRenderer>().color = color; //BAD GET COMPONENT CALL
             ActiveGibs.Add(gib);
