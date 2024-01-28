@@ -12,5 +12,6 @@ public class PlayerTuning : ScriptableObject
     public float JumpGraceDelay = .25f;
     public float JumpButtonDuration = .5f;
     public float FallGravityMultiplier = 1.5f;
+    public float GrabDistance = 3f;
     
 }

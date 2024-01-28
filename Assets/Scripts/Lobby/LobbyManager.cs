@@ -8,11 +8,8 @@ using UnityEngine;
 public struct PlayerLobbyData
 {
     public int ID;
+    public Color Color;
 
-    public PlayerLobbyData(int id)
-    {
-        ID = id;
-    }
 }
 
 public struct LobbyOutput
@@ -51,7 +48,7 @@ public class LobbyManager : MonoBehaviour
     private void Finish()
     {
         LobbyOutput output = new LobbyOutput();
-        output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData(_.ID)).ToArray();
+        output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData{ID = _.ID, Color = Color.red}).ToArray();
         
         var callback = onFinish;
         Clear();

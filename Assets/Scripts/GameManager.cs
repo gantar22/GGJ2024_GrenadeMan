@@ -35,6 +35,8 @@ public class GameManager : MonoBehaviour
     }
 
     [SerializeField] private PlayerController PlayerControllerPrefab;
+    [SerializeField] private Grenade GrenadePrefab;
+    [SerializeField] private PlayerTuning Tuning;
     
     [SerializeField] private MatchManager[] LevelPrefabs;
 
@@ -112,6 +114,6 @@ public class GameManager : MonoBehaviour
         {
             Players = inPlayerData,
         };
-        nextLevel.Init(matchParams,PlayerControllerPrefab);
+        nextLevel.Init(matchParams,PlayerControllerPrefab,GrenadePrefab,Tuning);
     }
 }
