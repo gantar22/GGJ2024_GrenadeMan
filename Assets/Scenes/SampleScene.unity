@@ -969,9 +969,11 @@ MonoBehaviour:
   Colors: {fileID: 11400000, guid: 1281072566373a2499ed967793d06933, type: 2}
   WinnerText: {fileID: 738270315}
   gameState:
-    flag: 1
+    flag: 3
     LevelIndex: -1
-    PlayerInfo: []
+    PlayerInfo:
+    - ID: 0
+      Color: {r: 1, g: 0, b: 0, a: 1}
 --- !u!4 &2132169736
 Transform:
   m_ObjectHideFlags: 0

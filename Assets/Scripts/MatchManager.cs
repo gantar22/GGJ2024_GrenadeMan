@@ -181,18 +181,23 @@ public class MatchManager : MonoBehaviour
             }
         }
 
-        
-        var DeadPlayers = players.Where(_=>_.Value.Alive).Where(_ => _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
-            .Select(_ => _.Key).ToArray();
-        foreach (var id in DeadPlayers)
+
+        // Zill players who fell off
         {
-            players[id].Controller.Kill(null);
-            var data = players[id];
-            data.Alive = false;
-            players[id] = data;
+            var DeadPlayers = players.Where(_ => _.Value.Alive).Where(_ =>
+                    _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
+                .Select(_ => _.Key).ToArray();
+            foreach (var id in DeadPlayers)
+            {
+                players[id].Controller.Kill(null);
+                var data = players[id];
+                data.Alive = false;
+                players[id] = data;
+            }
         }
 
-        if (players.Values.Count(_ => _.Alive) < 2)
+        // Check for winner
+        if (players.Values.Count(_ => _.Alive) < 2 && players.Values.Count(_=>!_.Alive) > 0)
         {
             var Winner = players.Where(_ => _.Value.Alive);
             foreach (var winner in Winner)
