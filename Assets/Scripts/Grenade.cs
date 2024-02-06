@@ -37,7 +37,8 @@ public class Grenade : MonoBehaviour
 
     public void Explode()
     {
-        Instantiate(ExplosionParticles, transform.position, quaternion.Euler(-90,0,0));
+        ParticleSystem explosion = Instantiate(ExplosionParticles);
+        explosion.gameObject.transform.position = transform.position + Vector3.back*0.1f;
         SoundMachine.Instance.PlaySound("Explosion");
     }
 }
