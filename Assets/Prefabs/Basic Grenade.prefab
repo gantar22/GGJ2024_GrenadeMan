@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 1547803168428137703}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.0302, y: 0.1001, z: 0}
+  m_LocalPosition: {x: 0.02495, y: 0.09513, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -76,7 +76,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: 21300000, guid: a9c3a5fbe8a729e46815055a2b514533, type: 3}
+  m_Sprite: {fileID: 21300000, guid: c58b8f162534dc94e98c645da07e6e62, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -129,8 +129,8 @@ HingeJoint2D:
   m_BreakTorque: Infinity
   m_BreakAction: 3
   m_AutoConfigureConnectedAnchor: 1
-  m_Anchor: {x: 0.02, y: 0.02}
-  m_ConnectedAnchor: {x: 0.050200462, y: 0.12010002}
+  m_Anchor: {x: 0.025, y: 0.025}
+  m_ConnectedAnchor: {x: 0.049949646, y: 0.12013006}
   m_UseMotor: 0
   m_Motor:
     m_MotorSpeed: 0
@@ -173,7 +173,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.035
+  m_Radius: 0.045
 --- !u!1 &4031144320296230254
 GameObject:
   m_ObjectHideFlags: 0
