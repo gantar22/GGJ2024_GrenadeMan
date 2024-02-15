@@ -76,7 +76,7 @@ GameObject:
   - component: {fileID: 5215793713754840381}
   - component: {fileID: 2487496230815421354}
   - component: {fileID: 6385581905986429362}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Foreground Map
   m_TagString: Untagged
   m_Icon: {fileID: 0}

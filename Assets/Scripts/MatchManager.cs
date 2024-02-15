@@ -141,9 +141,13 @@ public class MatchManager : MonoBehaviour
                         }
                         if (dist < grenade.KillRadius)
                         {
-                            player.Value.Controller.Kill(grenade);
-                            
-                            deadPlayers.Add(player.Key);
+                            if(!BlockedByEnvironment(grenade.transform.position, player.Value.Controller.transform.position))
+                            {
+                                Debug.DrawLine(grenade.transform.position, player.Value.Controller.transform.position, Color.red, 10f);
+                                player.Value.Controller.Kill(grenade);
+
+                                deadPlayers.Add(player.Key);
+                            }
                         }
                     }
 
@@ -161,9 +165,12 @@ public class MatchManager : MonoBehaviour
                         {
                             if (diff.magnitude < grenade.KillRadius * .66f)
                             {
-                                otherGrenade.Prime(new Vector2(.8f,UnityEngine.Random.value - .5f),ForceMode2D.Impulse);
-                                otherGrenade.FuseTimeLeft = Mathf.Min(otherGrenade.FuseTimeLeft.Value,
-                                    otherGrenade.ChainReactionDelay);
+                                if(!BlockedByEnvironment(grenade.transform.position, otherGrenade.transform.position))
+                                {
+                                    otherGrenade.Prime(new Vector2(.8f, UnityEngine.Random.value - .5f), ForceMode2D.Impulse);
+                                    otherGrenade.FuseTimeLeft = Mathf.Min(otherGrenade.FuseTimeLeft.Value,
+                                        otherGrenade.ChainReactionDelay);
+                                }
                             }
 
                             var sqrDist = Mathf.Max(diff.sqrMagnitude,.2f);
@@ -182,7 +189,7 @@ public class MatchManager : MonoBehaviour
         }
 
 
-        // Zill players who fell off
+        // Kill players who fell off
         {
             var DeadPlayers = players.Where(_ => _.Value.Alive).Where(_ =>
                     _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
@@ -250,5 +257,10 @@ public class MatchManager : MonoBehaviour
         }
         ActiveGrenades.Clear();
         grenadeSpawners = null;
+    }
+
+    bool BlockedByEnvironment(Vector3 start, Vector3 end)
+    {
+        return Physics2D.Raycast(start, end - start, Vector3.Distance(start, end), LayerMask.GetMask("Environment"));
     }
 }

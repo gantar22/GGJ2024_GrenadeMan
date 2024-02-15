@@ -970,7 +970,7 @@ MonoBehaviour:
   WinnerText: {fileID: 738270315}
   gameState:
     flag: 3
-    LevelIndex: -1
+    LevelIndex: 0
     PlayerInfo:
     - ID: 0
       Color: {r: 1, g: 0, b: 0, a: 1}

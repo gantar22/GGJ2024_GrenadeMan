@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Blue Sky
   m_EditorClassIdentifier: 
   m_Sprite: {fileID: 7482667652216324306, guid: bd866550e4474484d8bcadbeec283d76, type: 3}
-  m_Color: {r: 0.6316305, g: 0.7983312, b: 0.8867924, a: 1}
+  m_Color: {r: 0.24296904, g: 0.7292379, b: 0.7924528, a: 1}
   m_Transform:
     e00: 1
     e01: 0
