@@ -3,33 +3,34 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-[Serializable]
-public struct PlayerLobbyData
-{
-    public int ID;
-    public Color Color;
-
-}
 
 public struct LobbyOutput
 {
-    public PlayerLobbyData[] PlayerData;
+    public GameManager.ConnectedPlayer[] PlayerData;
 }
 
 public class LobbyManager : MonoBehaviour
 {
-    [SerializeField] private PlayerLobbyIcon[] Icons = null;
+    [SerializeField] public PlayerLobbyIcon[] Icons = null;
     [SerializeField] private TMPro.TMP_Text CountdownText;
+
+    private Color[] Colors;
+    
     private Action<LobbyOutput> onFinish = null;
-    public void PerformLobby(PlayerLobbyData[] inPlayers,Color[] Colors,int? inWinner, Action<LobbyOutput> inOnFinish)
+    public void PerformLobby(GameManager.ConnectedPlayer[] inPlayers,Color[] inColors,int? inWinner, Action<LobbyOutput> inOnFinish)
     {
+        Colors = inColors;
         CountdownText.text = "";
-        for (int i = 0; i < Icons.Length; i++)
+        for (int i = 0; i < Icons.Length; i++) // todo allow dynamically sized parties
         {
-            Icons[i].Init(i,Colors[i],Colors);
-            if (inPlayers.Any(_ => _.ID == i))
+            Icons[i].Init(i);
+            if (inPlayers.Any(_ => _.SlotIndex == i))
             {
+                var player = inPlayers.First(_ => _.SlotIndex == i);
+                Icons[i].SetInputDevice(player.Input);
+                Icons[i].SetColor(Colors[player.ColorId],player.ColorId);// todo don't search twice
                 Icons[i].joinedEvent.Invoke();
                 Icons[i].bActive = true;
                 if (inWinner.HasValue && inWinner.Value == i)
@@ -38,7 +39,32 @@ public class LobbyManager : MonoBehaviour
                 }
             }
         }
-        onFinish = inOnFinish;
+    }
+
+    public void AddPlayer(PlayerInput InputDevice)
+    {
+        var colorId = Enumerable.Range(0, Int32.MaxValue).First(i => !Icons.Where(_=>_.InputDevice != null).Any(_ => _.colorId == i));
+        for (int i = 0; i < Icons.Length; i++)
+        {
+            if (Icons[i].InputDevice == null)
+            {
+                Icons[i].SetColor(Colors[colorId % Colors.Length],colorId);
+                Icons[i].SetInputDevice(InputDevice);
+                return;
+            }
+        }
+    }
+
+    public void RemovePlayer(PlayerInput InputDevice)
+    {
+        for (int i = 0; i < Icons.Length; i++)
+        {
+            if (Icons[i].InputDevice == InputDevice)
+            {
+                Icons[i].bActive = false;
+                Icons[i].leaveEvent.Invoke();
+            }
+        }
     }
 
     public void Clear()
@@ -52,30 +78,39 @@ public class LobbyManager : MonoBehaviour
     
     
     
-    private void Finish()
-    {
-        LobbyOutput output = new LobbyOutput();
-        output.PlayerData = Icons.Where(_=>_.bActive).Select(_ => new PlayerLobbyData{ID = _.ID, Color = _.color}).ToArray();
-        
-        var callback = onFinish;
-        callback(output);
-    }
 
-    public void Tick()
+    public LobbyOutput? Tick()
     {
         foreach (var icon in Icons)
         {
-            icon.Tick();
+            icon.Tick(Colors.Select((c,i) => (i,c)).Where((color)=>!Icons.Any(_=>_.colorId == color.i)));
         }
 
         if (Icons.All(_=>_.bReady || !_.bActive) && Icons.Count(_=>_.bActive) > 1)
         {
-            Finish();
+            return new LobbyOutput
+            {
+                PlayerData = Icons.Where(_=>_.bActive).Select(_ => new GameManager.ConnectedPlayer()
+                {
+                    SlotIndex = _.SlotIndex,
+                    ColorId = _.colorId,
+                    Input = _.InputDevice,
+                }).ToArray()
+            };
+        }
+        else
+        {
+            return null;
         }
     }
 
     public void CountDown(float TimeLeft)
     {
         CountdownText.text = $"{1 + (int)TimeLeft}!";
+    }
+
+    public void ResetCountDown()
+    {
+        CountdownText.text = "";
     }
 }

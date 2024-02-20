@@ -12,14 +12,15 @@ using Random = Unity.Mathematics.Random;
 
 public struct MatchParams
 {
-    public PlayerLobbyData[] Players;
+    public GameManager.ConnectedPlayer[] Players;
 }
 
 public struct PlayerMatchData
 {
     public PlayerController Controller;
-    public PlayerLobbyData LobbyData;
-    public bool Alive;
+    public bool bConnected;
+    public GameManager.ConnectedPlayer LobbyData;
+    public bool bAlive;
 }
 
 [Serializable]
@@ -38,6 +39,7 @@ public struct GrenadeSpawner
 
 public struct MatchResults
 {
+    public GameManager.ConnectedPlayer[] players;
     public int? Winner;//null for everyone died
 }
 
@@ -50,11 +52,14 @@ public class MatchManager : MonoBehaviour
 
     private GrenadeSpawner[] grenadeSpawners;
     private Grenade grenadePrefab;
-    
-    private Dictionary<uint, PlayerMatchData> players = new Dictionary<uint, PlayerMatchData>();
+    private PlayerController playerControllerPrefab;
+    private Color[] Colors;
+
+
+    public Dictionary<int, PlayerMatchData> players = new Dictionary<int, PlayerMatchData>();
     private List<Grenade> ActiveGrenades = new List<Grenade>();
     private float TimeSinceStarted;
-    public void Init(MatchParams inParams, PlayerController inPlayerControllerPrefab, Grenade inGrenadePrefab, PlayerTuning inTuning)
+    public void Init(MatchParams inParams, PlayerController inPlayerControllerPrefab, Grenade inGrenadePrefab, PlayerTuning inTuning, Color[] inColors)
     {
         if (inParams.Players.Length > spawnPoints.Length)
         {
@@ -64,21 +69,24 @@ public class MatchManager : MonoBehaviour
 
         TimeSinceStarted = 0;
         grenadePrefab = inGrenadePrefab;
+        playerControllerPrefab = inPlayerControllerPrefab;
+        Colors = inColors;
         uint[] PlayerSpawnOrder = PermuteNumbers(inParams.Players.Length);
         Tuning = inTuning;
 
-        players = new Dictionary<uint, PlayerMatchData>();
+        players = new Dictionary<int, PlayerMatchData>();
         for (uint i = 0; i < inParams.Players.Length; i++)
         {
             var player = Instantiate(inPlayerControllerPrefab, spawnPoints[PlayerSpawnOrder[i]].transform.position, Quaternion.identity);
-            player.Init(inParams.Players[i].Color);
+            player.Init(inColors[inParams.Players[i].ColorId]);
             PlayerMatchData data = new PlayerMatchData
             {
                 LobbyData = inParams.Players[i],
+                bConnected = true,
                 Controller = player,
-                Alive = true
+                bAlive = true
             };
-            players.Add((uint)inParams.Players[i].ID,data);
+            players.Add(inParams.Players[i].SlotIndex,data);
         }
 
         grenadeSpawners = grenadePoints
@@ -90,19 +98,18 @@ public class MatchManager : MonoBehaviour
     {
         TimeSinceStarted += Time.deltaTime;
         var gamepads = Gamepad.all;
-        foreach(var player in players.Where(_=>_.Value.Alive))
+        foreach(var player in players.Values.Where(_=>_.bAlive))
         {
-            Gamepad gamepad = gamepads.Count > player.Key ? gamepads[(int)player.Key] : null;
             Grenade NearestGrenade = ActiveGrenades
                 .Where(g=>!players.Any(_=>_.Value.Controller.PossibleHeldGrenade == g))
-                .OrderBy(_ => Vector2.Distance(player.Value.Controller.PickupPoint.position, _.transform.position))
+                .OrderBy(_ => Vector2.Distance(player.Controller.PickupPoint.position, _.transform.position))
                 .FirstOrDefault(_ =>
                 {
-                    var VectorToGrenade = _.transform.position - player.Value.Controller.PickupPoint.position;
+                    var VectorToGrenade = _.transform.position - player.Controller.PickupPoint.position;
                     
-                    return Vector2.Dot(VectorToGrenade,-player.Value.Controller.VisualParts.transform.right) > -.1f &&  VectorToGrenade.magnitude < Tuning.GrabDistance;
+                    return Vector2.Dot(VectorToGrenade,-player.Controller.VisualParts.transform.right) > -.1f &&  VectorToGrenade.magnitude < Tuning.GrabDistance;
                 });
-            player.Value.Controller.Tick(gamepad,NearestGrenade);
+            player.Controller.Tick(player.LobbyData.Input,NearestGrenade);
         }
 
         for(int i = 0; i < grenadeSpawners.Length;i++)
@@ -114,7 +121,7 @@ public class MatchManager : MonoBehaviour
                 ActiveGrenades.Add(newGrenade);
                 grenadeSpawners[i].TimeLeft =
                     UnityEngine.Random.Range(grenadePoints[i].MinSpawnDelay, grenadePoints[i].MaxSpawnDelay)
-                    * Mathf.Min(.5f,60/(60+TimeSinceStarted * players.Values.Count(_=>!_.Alive)));
+                    * Mathf.Min(.5f,60/(60+TimeSinceStarted * players.Values.Count(_=>!_.bAlive)));
             }
         }
 
@@ -127,8 +134,8 @@ public class MatchManager : MonoBehaviour
                 if (grenade.FuseTimeLeft < 0f)
                 {//Explode!
                     grenade.Explode();
-                    var deadPlayers = new List<uint>();
-                    foreach (var player in players.Where(_=>_.Value.Alive))
+                    var deadPlayers = new List<int>();
+                    foreach (var player in players.Where(_=>_.Value.bAlive))
                     {
                         var dist = Vector3.Distance(grenade.transform.position, player.Value.Controller.transform.position);
                         var diff = player.Value.Controller.transform.position - grenade.transform.position;
@@ -154,7 +161,7 @@ public class MatchManager : MonoBehaviour
                     foreach (var id in deadPlayers)
                     {
                         var data = players[id];
-                        data.Alive = false;
+                        data.bAlive = false;
                         players[id] = data;
                     }
 
@@ -191,28 +198,29 @@ public class MatchManager : MonoBehaviour
 
         // Kill players who fell off
         {
-            var DeadPlayers = players.Where(_ => _.Value.Alive).Where(_ =>
+            var DeadPlayers = players.Where(_ => _.Value.bAlive).Where(_ =>
                     _.Value.Controller.transform.position.y < DeathLevel.transform.position.y)
                 .Select(_ => _.Key).ToArray();
             foreach (var id in DeadPlayers)
             {
                 players[id].Controller.Kill(null);
                 var data = players[id];
-                data.Alive = false;
+                data.bAlive = false;
                 players[id] = data;
             }
         }
 
         // Check for winner
-        if (players.Values.Count(_ => _.Alive) < 2 && players.Values.Count(_=>!_.Alive) > 0)
+        if (players.Values.Count(_ => _.bAlive) < 2 && players.Values.Count(_=>!_.bAlive) > 0)
         {
-            var Winner = players.Where(_ => _.Value.Alive);
+            var Winner = players.Where(_ => _.Value.bAlive);
             foreach (var winner in Winner)
             {
                 winner.Value.Controller.Crown.SetActive(true);
             }
             return new MatchResults()
             {
+                players = players.Values.Select(_=>_.LobbyData).ToArray(),
                 Winner = Winner.Select(_ => (int?)_.Key).FirstOrDefault(),
             };
         }
@@ -257,6 +265,54 @@ public class MatchManager : MonoBehaviour
         }
         ActiveGrenades.Clear();
         grenadeSpawners = null;
+    }
+
+    public void AddPlayer(PlayerInput newPlayer)
+    {
+        var matchingPlayer = players.Values.Where(_ => !_.bConnected).Where(_ =>
+            _.LobbyData.Input != null && _.LobbyData.Input.playerIndex == newPlayer.playerIndex).ToArray();
+        
+        if (matchingPlayer.Length == 1)
+        {
+            var playerData = matchingPlayer[0];
+            playerData.bConnected = true;
+            playerData.LobbyData.Input = newPlayer; // don't think this is necessary, but we technically didn't check for it 
+            players[playerData.LobbyData.SlotIndex] = playerData;
+        }
+        else
+        {
+            var slotIndex = Enumerable.Range(0, Int32.MaxValue)
+                .First(i => !players.Values.Any(_ => _.LobbyData.SlotIndex == i));
+            var colorId = Enumerable.Range(0, Int32.MaxValue)
+                .First(i => !players.Values.Any(_ => _.LobbyData.ColorId == i));
+            var player = Instantiate(playerControllerPrefab, spawnPoints[UnityEngine.Random.Range(0,spawnPoints.Length)].transform.position, Quaternion.identity);
+            player.Init(Colors[colorId]);
+            PlayerMatchData data = new PlayerMatchData
+            {
+                LobbyData = new GameManager.ConnectedPlayer
+                {
+                    Input = newPlayer,
+                    ColorId = colorId,
+                    SlotIndex = slotIndex
+                },
+                bConnected = true,
+                Controller = player,
+                bAlive = true
+            };
+            players.Add(slotIndex,data);
+        }
+    }
+
+    public void RemovePlayer(PlayerInput playerToRemove)
+    {
+        var matchingPlayer = players.Values.Where(_ => _.bConnected).Where(_ =>
+            _.LobbyData.Input != null && _.LobbyData.Input.playerIndex == playerToRemove.playerIndex).ToArray();
+        if (matchingPlayer.Length == 1)
+        {
+            var data = matchingPlayer[0];
+            data.bConnected = false;
+            players[data.LobbyData.SlotIndex] = data;
+        }
     }
 
     bool BlockedByEnvironment(Vector3 start, Vector3 end)

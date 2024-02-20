@@ -61,7 +61,7 @@ public class PlayerController : MonoBehaviour
         Crown.SetActive(false);
     }
 
-    void UpdateTimers(Gamepad gamepad)
+    void UpdateTimers(PlayerInput gamepad)
     {
         if (CalculateGrounded())
         {
@@ -72,7 +72,7 @@ public class PlayerController : MonoBehaviour
             timeSinceLastGround += Time.deltaTime;
         }
 
-        if (rigidbody.velocity.y < 0 || !(gamepad != null && gamepad.buttonSouth.IsPressed()))
+        if (rigidbody.velocity.y < 0 || !(gamepad != null && gamepad.actions["jump"].IsPressed()))
         {
             rigidbody.gravityScale = Tuning.FallGravityMultiplier;
         }
@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour
             rigidbody.gravityScale = 1;
         }
 
-        if (gamepad != null && gamepad.buttonSouth.wasPressedThisFrame)
+        if (gamepad != null && gamepad.actions["jump"].WasPressedThisFrame())
         {
             timeSinceJumpPressed = 0f;
         }
@@ -91,13 +91,13 @@ public class PlayerController : MonoBehaviour
         }
     }
     
-    public void Tick(Gamepad gamepad, Grenade PossibleNearestGrenade)
+    public void Tick(PlayerInput gamepad, Grenade PossibleNearestGrenade)
     {
         UpdateTimers(gamepad);
         Animator.SetBool("Grounded",timeSinceLastGround <= .0f);
         if (playerState != PlayerState.Stunned)
         {
-            if (gamepad != null && gamepad.buttonEast.wasPressedThisFrame)
+            if (gamepad != null && gamepad.actions["prime"].WasPressedThisFrame())
             {
                 if (PossibleHeldGrenade)
                 {
@@ -125,7 +125,7 @@ public class PlayerController : MonoBehaviour
                         PossibleNearestGrenade.Highlight.color = color;
                         PossiblePreviouslyColoredGrenade = PossibleNearestGrenade;
                     }
-                    if (gamepad.buttonWest.wasPressedThisFrame)
+                    if (gamepad.actions["throw"].WasPressedThisFrame())
                     {
                         if (PossibleHeldGrenade)
                         {
@@ -155,15 +155,16 @@ public class PlayerController : MonoBehaviour
                 {
                     ThrowArrow.SetActive(true);
                     ThrowArrow.SetColor(color);
-                    if (gamepad.leftStick.value.magnitude > .5f)
+                    Vector2 moveStick = gamepad.actions["move"].ReadValue<Vector2>();
+                    if (moveStick.magnitude > .5f)
                     {
-                        throwAngle = gamepad.leftStick.value;
+                        throwAngle = moveStick;
                     }
                     ThrowArrow.SetAngle(throwAngle);
                     throwAlpha += Time.deltaTime * ThrowChargeSpeed;
                     ThrowArrow.SetAlpha(Mathf.PingPong(throwAlpha, 1f));
 
-                    if (gamepad.buttonWest.wasReleasedThisFrame)
+                    if (gamepad.actions["throw"].WasReleasedThisFrame())
                     {
                        ThrowGrenade(gamepad);
                     }
@@ -179,10 +180,10 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void PerformMovement(Gamepad gamepad)
+    void PerformMovement(PlayerInput gamepad)
     {
         //x movement
-        var moveAxis = gamepad != null ? gamepad.leftStick.value.x : 0f;
+        var moveAxis = gamepad != null ? gamepad.actions["move"].ReadValue<Vector2>().x : 0f;
         var targetXVel = moveAxis * Tuning.WalkSpeed;
         var newXVel = Mathf.SmoothDamp(rigidbody.velocity.x, targetXVel, ref movementAcceleration,Tuning.MovementSmoothTime,Tuning.MaxMovementAcceleration);
         bool blocked = false;
@@ -265,7 +266,7 @@ public class PlayerController : MonoBehaviour
         grenade.transform.SetParent(GrenadeHolder.transform,true);
     }
 
-    void ThrowGrenade(Gamepad gamepad)
+    void ThrowGrenade(PlayerInput gamepad)
     {
         var grenade = PossibleHeldGrenade;
         if (grenade == null || gamepad == null)

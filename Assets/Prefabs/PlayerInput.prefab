@@ -1,0 +1,132 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6374832600127838819
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7332832430841948910}
+  - component: {fileID: 5404204184318671916}
+  m_Layer: 0
+  m_Name: PlayerInput
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7332832430841948910
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6374832600127838819}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 11.140356, y: 27.559254, z: 52.49765}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5404204184318671916
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6374832600127838819}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62899f850307741f2a39c98a8b639597, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Actions: {fileID: -944628639613478452, guid: c0aba0ae8eab32145a01c76d2e85df61, type: 3}
+  m_NotificationBehavior: 3
+  m_UIInputModule: {fileID: 0}
+  m_DeviceLostEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_DeviceRegainedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ControlsChangedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  m_ActionEvents:
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 0c588c8c-c17a-4fb5-bf3d-55561bf77448
+    m_ActionName: Player/Move[/Keyboard/w,/Keyboard/i,/Keyboard/s,/Keyboard/k,/Keyboard/a,/Keyboard/j,/Keyboard/d,/Keyboard/l]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: bba44b29-6614-4d8e-9e10-a669a5d2f019
+    m_ActionName: Player/Grab/Throw[/Keyboard/q,/Keyboard/u]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 3f43d8d6-9eab-43ac-89cf-3588e6db3485
+    m_ActionName: Player/Prime[/Keyboard/e,/Keyboard/o]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 238d9184-d697-413a-8353-566fb14c22d0
+    m_ActionName: Player/Jump[/Keyboard/w,/Keyboard/i]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5c41f52c-3041-487d-82a2-071a42452a77
+    m_ActionName: Player/Join[/Keyboard/q,/Keyboard/u]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 96d125c9-99ad-4141-8141-14cc652f9084
+    m_ActionName: Player/Leave[/Keyboard/e,/Keyboard/o]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: ec795af7-3af4-4cae-873e-5f4489424141
+    m_ActionName: UI/Navigate
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 0a4a0f0f-e6de-4133-98e4-719f79850714
+    m_ActionName: UI/Submit[/Keyboard/enter]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 30324a46-b006-4f15-841d-b7f9b1186bb5
+    m_ActionName: UI/Cancel[/Keyboard/escape]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: bad0c3d0-e98a-459c-9ea5-6c3e6615d827
+    m_ActionName: UI/Point
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: d658570f-fa48-4c7d-b1fa-5d988f22c9b4
+    m_ActionName: UI/Click[/Mouse/leftButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 6dddc23f-6bd1-43a2-a08c-004618539a22
+    m_ActionName: UI/ScrollWheel[/Mouse/scroll]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5800761c-6676-4efd-9513-63943367743f
+    m_ActionName: UI/MiddleClick[/Mouse/middleButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 57fb3791-8564-47d5-bd15-5144b4429988
+    m_ActionName: UI/RightClick[/Mouse/rightButton]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: eb5cd1f9-0bf6-4617-9bd9-7ba13e3f7427
+    m_ActionName: UI/TrackedDevicePosition
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 5791a6d1-823e-413b-b691-d26452f455be
+    m_ActionName: UI/TrackedDeviceOrientation
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: 151bd163-c862-4b6c-8f23-1f31d029b014
+    m_ActionName: Player/throw[/Keyboard/q,/Keyboard/u]
+  m_NeverAutoSwitchControlSchemes: 1
+  m_DefaultControlScheme: wasd
+  m_DefaultActionMap: Player
+  m_SplitScreenIndex: -1
+  m_Camera: {fileID: 0}

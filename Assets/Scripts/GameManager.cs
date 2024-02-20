@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Serialization;
 
 public class GameManager : MonoBehaviour
@@ -24,18 +25,18 @@ public class GameManager : MonoBehaviour
         public GameStateFlag flag;
         [SerializeField]
         public int LevelIndex;//-1 for random/uninit
-        [SerializeField]
-        public PlayerLobbyData[] PlayerInfo;
 
         [HideInInspector] public float? TimeLeftTillTransistion;
         [HideInInspector] public MatchResults? PreviousResults;
 
+        public Dictionary<int,ConnectedPlayer> playerConnections;
         public static GameState Lobby()
         {
             return new GameState()
             {
                 flag = GameStateFlag.Lobby,
                 LevelIndex = -1,
+                playerConnections = new Dictionary<int, ConnectedPlayer>(),
             };
         }
     }
@@ -54,6 +55,58 @@ public class GameManager : MonoBehaviour
 
     private MatchManager[] Levels;
 
+    public struct ConnectedPlayer
+    {
+        public PlayerInput Input;
+        public int ColorId;
+        public int SlotIndex;
+    }
+
+    public void AddPlayer(PlayerInput newPlayer)
+    {
+        switch (gameState.flag)
+        {
+            case GameStateFlag.Uninit:
+                gameState.playerConnections.Add(newPlayer.playerIndex,new ConnectedPlayer()
+                {
+                    Input = newPlayer,
+                    ColorId = Enumerable.Range(0,Int32.MaxValue).First(i => !gameState.playerConnections.Values.Any(_=>_.ColorId == i)),
+                    SlotIndex = Enumerable.Range(0,Int32.MaxValue).First(i => !gameState.playerConnections.Values.Any(_=>_.SlotIndex == i)),
+                });
+                break;
+            case GameStateFlag.Lobby:
+            case GameStateFlag.EndLobby:
+                LobbyManager.AddPlayer(newPlayer);
+                break;
+            case GameStateFlag.Match:
+            case GameStateFlag.EndMatch:
+                Levels[gameState.LevelIndex].AddPlayer(newPlayer);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public void RemovePlayer(PlayerInput playerToRemove)
+    {
+        switch (gameState.flag)
+        {
+            case GameStateFlag.Uninit:
+                gameState.playerConnections.Remove(playerToRemove.playerIndex); 
+                break;
+            case GameStateFlag.Lobby:
+            case GameStateFlag.EndLobby:
+                LobbyManager.RemovePlayer(playerToRemove);
+                break;
+            case GameStateFlag.Match:
+            case GameStateFlag.EndMatch:
+                Levels[gameState.LevelIndex].RemovePlayer(playerToRemove);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+    
     private void Start()
     {
         Cursor.visible = false;
@@ -65,11 +118,11 @@ public class GameManager : MonoBehaviour
                 break;
             case GameStateFlag.Lobby:
                 Jukebox.Instance.ToggleMuffle(true);
-                GoToLobby(gameState.PlayerInfo);
+                GoToLobby(gameState.playerConnections.Values.ToArray());
                 break;
             case GameStateFlag.Match:
                 Jukebox.Instance.ToggleMuffle(false);
-                GoToLevel(gameState.PlayerInfo,gameState.LevelIndex != -1 ? gameState.LevelIndex : null);
+                GoToLevel(gameState.playerConnections.Values.ToArray(),gameState.LevelIndex != -1 ? gameState.LevelIndex : null);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -92,40 +145,61 @@ public class GameManager : MonoBehaviour
             case GameStateFlag.Uninit:
                 break;
             case GameStateFlag.Lobby:
-                LobbyManager.Tick();
+                var lobbyOutput = LobbyManager.Tick();
+                if (lobbyOutput.HasValue)
+                {
+                    gameState.flag = GameStateFlag.EndLobby;
+                    gameState.TimeLeftTillTransistion = 3;
+                    gameState.playerConnections = lobbyOutput.Value.PlayerData.ToDictionary(_ => _.Input.playerIndex);
+                }
                 break;
             case GameStateFlag.EndLobby:
-                gameState.TimeLeftTillTransistion -= Time.deltaTime;
+                lobbyOutput = LobbyManager.Tick();
+                if (lobbyOutput.HasValue)
+                {
+                    gameState.playerConnections = lobbyOutput.Value.PlayerData.ToDictionary(_ => _.Input.playerIndex);
+                }
+                else
+                {
+                    gameState.TimeLeftTillTransistion = null;
+                    gameState.flag = GameStateFlag.Lobby;
+                    LobbyManager.ResetCountDown();
+                    break;
+                }
+                gameState.TimeLeftTillTransistion -= Time.deltaTime * .85f;
                 LobbyManager.CountDown(gameState.TimeLeftTillTransistion.Value);
                 if (gameState.TimeLeftTillTransistion < 0)
                 {
                     LobbyManager.Clear();
                     LobbyManager.gameObject.SetActive(false);
                     Jukebox.Instance.ToggleMuffle(false);
-                    GoToLevel(gameState.PlayerInfo);
+                    GoToLevel(gameState.playerConnections.Values.ToArray());
                 }
                 break;
             case GameStateFlag.Match:
-                var results = Levels[gameState.LevelIndex].Tick();
-                if (results.HasValue)
+                var matchResults = Levels[gameState.LevelIndex].Tick();
+                if (matchResults.HasValue)
                 {
                     gameState.TimeLeftTillTransistion = 4f;
                     gameState.flag = GameStateFlag.EndMatch;
                     WinnerText.gameObject.SetActive(true);
-                    if (results.Value.Winner.HasValue)
+                    if (matchResults.Value.Winner.HasValue)
                     {
-                        var winnerData = gameState.PlayerInfo.First(_ => _.ID == results.Value.Winner);
-                        WinnerText.text = $"Player <color=#{winnerData.Color.ToHexString()}>{results.Value.Winner + 1}</color> Won!";
+                        gameState.playerConnections = matchResults.Value.players.ToDictionary(_ => _.Input.playerIndex);
+                        var winnerData = gameState.playerConnections.Values.First(_ => _.SlotIndex == matchResults.Value.Winner);
+                        WinnerText.text = $"Player <color=#{Colors.colors[winnerData.ColorId].ToHexString()}>{matchResults.Value.Winner + 1}</color> Won!";
                     }
                     else
                     {
                         WinnerText.text = $"Everyone died!";
                     }
-                    gameState.PreviousResults = results;
+                    gameState.PreviousResults = matchResults;
                 }
                 break;
             case GameStateFlag.EndMatch:
                 Levels[gameState.LevelIndex].Tick();
+                gameState.playerConnections =
+                    Levels[gameState.LevelIndex].players.Values.Select(_ => _.LobbyData).ToDictionary(_=>_.Input.playerIndex);
                 gameState.TimeLeftTillTransistion -= Time.deltaTime;
                 if (gameState.TimeLeftTillTransistion < 0)
                 {
@@ -135,7 +209,7 @@ public class GameManager : MonoBehaviour
                     WinnerText.text = "";
                     WinnerText.gameObject.SetActive(false);
                     Jukebox.Instance.ToggleMuffle(true);
-                    GoToLobby(gameState.PlayerInfo,gameState.PreviousResults.Value.Winner);
+                    GoToLobby(gameState.playerConnections.Values.ToArray(),gameState.PreviousResults.Value.Winner);
                 }
                 break;
             default:
@@ -143,7 +217,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void GoToLobby(PlayerLobbyData[] inPlayers, int? inWinner = null)
+    void GoToLobby(ConnectedPlayer[] inPlayers, int? inWinner = null)
     {
         gameState.flag = GameStateFlag.Lobby;
         gameState.LevelIndex = -1;
@@ -151,13 +225,10 @@ public class GameManager : MonoBehaviour
         //TODO the callback here is probably not the greatest, we could just poll and not have to invert control flow like this
         LobbyManager.PerformLobby(inPlayers,Colors.colors,inWinner,output =>
         {
-            gameState.flag = GameStateFlag.EndLobby;
-            gameState.TimeLeftTillTransistion = 3;
-            gameState.PlayerInfo = output.PlayerData;
         });
     }
 
-    void GoToLevel(PlayerLobbyData[] inPlayerData, int? inLevelIndex = null)
+    void GoToLevel(ConnectedPlayer[] inPlayerData, int? inLevelIndex = null)
     {
         int levelIndex = inLevelIndex.HasValue ? inLevelIndex.Value : UnityEngine.Random.Range(0, Levels.Length);
         
@@ -169,6 +240,6 @@ public class GameManager : MonoBehaviour
         {
             Players = inPlayerData,
         };
-        nextLevel.Init(matchParams,PlayerControllerPrefab,GrenadePrefab,Tuning);
+        nextLevel.Init(matchParams,PlayerControllerPrefab,GrenadePrefab,Tuning,Colors.colors);
     }
 }

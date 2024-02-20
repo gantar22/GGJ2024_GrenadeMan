@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -18,67 +19,72 @@ public class PlayerLobbyIcon : MonoBehaviour
 
     [SerializeField] private Graphic[] Colorables;
     
-    public int ID;
     public bool bActive = false;
     public bool bReady = false;
 
     public Color color;
-    private Color[] colorOptions;
-    public void Init(int inID,Color inColor,Color[] inColorOptions)
+    public int colorId;
+    public int SlotIndex;
+    public PlayerInput InputDevice = null;
+    public void Init(int inSlotIndex)
     {
-        ID = inID;
         unreadyEvent.Invoke();
         leaveEvent.Invoke();
         bActive = false;
         bReady = false;
+        SlotIndex = inSlotIndex;
+    }
+
+    public void SetInputDevice(PlayerInput inInputDevice)
+    {
+        InputDevice = inInputDevice;
+    }
+    
+    public void SetColor(Color inColor, int inColorId)
+    {
         color = inColor;
-        colorOptions = inColorOptions;
+        colorId = inColorId;
         foreach (var g in Colorables)
         {
             g.color = color;
         }
     }
     
-    public void Tick()
+    public void Tick(IEnumerable<(int,Color)> availableColors)// todo add color changing here
     {
-        HandleInput();
-    }
-
-    private void HandleInput()
-    {
-        var gamepads = Gamepad.all;
-        if (gamepads.Count <= ID)
-            return;
-        if (gamepads[ID].buttonSouth.wasReleasedThisFrame)
+        if (InputDevice)
         {
-            if (bActive)
+            if (InputDevice.actions["join"].WasPressedThisFrame()) //todo look up action names
             {
-                if(!bReady)
+                if (bActive)
                 {
-                    readyEvent.Invoke();
-                    bReady = true;
-                }
-            }
-            else
-            {
-                joinedEvent.Invoke();
-                bActive = true;
-            }
-        }
-
-        if (gamepads[ID].buttonEast.wasReleasedThisFrame)
-        {
-            if (bActive)
-            {
-                if (bReady)
-                {
-                    bReady = false;
-                    unreadyEvent.Invoke();
+                    if(!bReady)
+                    {
+                        readyEvent.Invoke();
+                        bReady = true;
+                    }
                 }
                 else
                 {
-                    bActive = false;
-                    leaveEvent.Invoke();
+                    joinedEvent.Invoke();
+                    bActive = true;
+                }
+            }
+
+            if (InputDevice.actions["leave"].WasPressedThisFrame())
+            {
+                if (bActive)
+                {
+                    if (bReady)
+                    {
+                        bReady = false;
+                        unreadyEvent.Invoke();
+                    }
+                    else
+                    {
+                        bActive = false;
+                        leaveEvent.Invoke();
+                    }
                 }
             }
         }
@@ -88,7 +94,6 @@ public class PlayerLobbyIcon : MonoBehaviour
     {
         bReady = false;
         bActive = false;
-        ID = -1;
         clearEvent.Invoke();
         unCrownEvent.Invoke();
     }
