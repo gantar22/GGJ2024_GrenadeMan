@@ -87,6 +87,46 @@ public class PlayerLobbyIcon : MonoBehaviour
                     }
                 }
             }
+
+            if (bActive)
+            {
+                if (InputDevice.actions["right"].WasPressedThisFrame())
+                {
+                    MoveColor(availableColors,1);
+                }
+
+                if (InputDevice.actions["left"].WasPressedThisFrame())
+                {
+                    MoveColor(availableColors, -1);
+                }
+            }
+        }
+    }
+
+    static int Mod(int a, int b)
+    {
+        return ((a % b) + b) % b;
+    }
+
+    void MoveColor(IEnumerable<(int,Color)> inColors, int diff)
+    {
+        var colors = inColors as (int, Color)[] ?? inColors.ToArray();
+        var nextColors = 
+            colors
+            .Where(_ => _.Item1 > colorId)
+            .OrderBy(_ => _.Item1)
+            .Concat
+            (
+                colors
+                .Where(_ => _.Item1 < colorId)
+                .OrderBy(_ => _.Item1)
+            )
+            .Prepend((colorId,color))
+            .ToArray();
+        if (nextColors.Any())
+        {
+            var nextColor = nextColors[Mod(diff,nextColors.Length)];
+            SetColor(nextColor.Item2,nextColor.Item1);
         }
     }
 

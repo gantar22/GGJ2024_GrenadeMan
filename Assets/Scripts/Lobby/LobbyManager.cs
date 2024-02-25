@@ -18,8 +18,7 @@ public class LobbyManager : MonoBehaviour
 
     private Color[] Colors;
     
-    private Action<LobbyOutput> onFinish = null;
-    public void PerformLobby(GameManager.ConnectedPlayer[] inPlayers,Color[] inColors,int? inWinner, Action<LobbyOutput> inOnFinish)
+    public void PerformLobby(GameManager.ConnectedPlayer[] inPlayers,Color[] inColors,int? inWinner)
     {
         Colors = inColors;
         CountdownText.text = "";
@@ -73,7 +72,6 @@ public class LobbyManager : MonoBehaviour
         {
             icon.Clear();
         }
-        onFinish = null;
     }
     
     
